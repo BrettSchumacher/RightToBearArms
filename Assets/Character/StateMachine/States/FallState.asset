@@ -14,7 +14,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stateType: 4
   transitions:
+  - targetState: {fileID: 11400000, guid: 2998dd6b6e827f6438bdeb08795eb87f, type: 2}
+    conditions:
+    - condition: {fileID: 11400000, guid: d5b5f0fd77465d34ea07662ffa08b3a6, type: 2}
+      inverted: 0
+  - targetState: {fileID: 11400000, guid: e514fed6d929fe744bbfdc8d0b68b3ec, type: 2}
+    conditions:
+    - condition: {fileID: 11400000, guid: b3d1e78a5c3a9584abc39da111bb0fcf, type: 2}
+      inverted: 0
+    - condition: {fileID: 11400000, guid: cf57c1d64689c6b48a905c402aa929ca, type: 2}
+      inverted: 0
   - targetState: {fileID: 11400000, guid: 165c05b4e63ebf74eb73c2f3f3278c90, type: 2}
     conditions:
     - condition: {fileID: 11400000, guid: b3d1e78a5c3a9584abc39da111bb0fcf, type: 2}
       inverted: 0
+  maxFallSpeed: -10
+  maxBoostedFallSpeed: -12
+  strafeSpeed: 4
+  timeToMaxFromRest: 0.5
+  timeToBoostFromMax: 0.2
+  timeToMaxFromBoost: 0.15

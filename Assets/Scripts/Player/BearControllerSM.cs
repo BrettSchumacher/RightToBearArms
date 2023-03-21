@@ -5,14 +5,18 @@ using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(BearAnimManager))]
 public class BearControllerSM : MonoBehaviour
 {
     public List<IStateSO> startingStates;
     public float jumpBufferTime = 0.1f;
     public float coyoteTimeLength = 0.1f;
-    public int startingNumJumps = 1;
+    public int startingAirJumps = 1;
+    public float groundRaycastDist = 0.01f;
+    public float wallRaycastDist = 0.05f;
+    public LayerMask obstacleMask;
 
-    public UnityAction<State> OnStateEnter;
+    public UnityAction<StateType> OnStateEnter;
 
     List<IStateSO> availableStates;
     List<Transition> currentTransitions;
@@ -21,6 +25,7 @@ public class BearControllerSM : MonoBehaviour
     int numJumps;
     int numAvailableJumps;
     bool coyoteTime;
+    Vector2 velocity;
 
     [HideInInspector] public bool grounded = true;
     [HideInInspector] public bool rightWall = false;
@@ -29,6 +34,10 @@ public class BearControllerSM : MonoBehaviour
     [HideInInspector] public bool jumpInput;
     [HideInInspector] public bool climbHeld;
     [HideInInspector] public bool grappleInput;
+
+    [HideInInspector] public GameObject rightWallObj;
+    [HideInInspector] public GameObject leftWallObj;
+
     Coroutine resetJump;
     Coroutine resetCoyoteTime;
     public Vector2 moveInput { get; set; }
@@ -36,6 +45,8 @@ public class BearControllerSM : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        rb = GetComponent<Rigidbody2D>();
+
         availableStates = new List<IStateSO>(startingStates);
         currentState = availableStates[0].GetStateInstance(this);
         currentState.OnStateEnter();
@@ -43,8 +54,7 @@ public class BearControllerSM : MonoBehaviour
 
         OnStateEnter?.Invoke(currentState.stateType);
 
-        rb = GetComponent<Rigidbody2D>();
-        numJumps = startingNumJumps;
+        numJumps = startingAirJumps;
         numAvailableJumps = numJumps;
     }
 
@@ -59,6 +69,8 @@ public class BearControllerSM : MonoBehaviour
         {
             TryTransition();
         }
+
+        rb.velocity = velocity;
     }
 
     private void FixedUpdate()
@@ -77,6 +89,9 @@ public class BearControllerSM : MonoBehaviour
         leftWall = false;
         rightWall = false;
 
+        leftWallObj = null;
+        rightWallObj = null;
+
         foreach (ContactPoint2D contact in contacts)
         {
             if (contact.normal.y > 0.5f)
@@ -86,10 +101,12 @@ public class BearControllerSM : MonoBehaviour
             if (contact.normal.x > 0.5f)
             {
                 leftWall = true;
+                leftWallObj = contact.collider.gameObject;
             }
             if (contact.normal.x < -0.5f)
             {
                 rightWall = true;
+                rightWallObj = contact.collider.gameObject;
             }
         }
 
@@ -140,12 +157,28 @@ public class BearControllerSM : MonoBehaviour
         currentState.OnStateExit();
         currentState = newState;
         currentState.OnStateEnter();
+        currentTransitions = newState.GetTransitions();
         OnStateEnter?.Invoke(currentState.stateType);
     }
 
     public Vector2 GetVelocity()
     {
         return rb.velocity;
+    }
+
+    public void SetXVelocity(float xVel)
+    {
+        velocity.x = xVel;
+    }
+
+    public void SetYVelocity(float yVel)
+    {
+        velocity.y = yVel;
+    }
+
+    public void SetVelocity(Vector2 newVel)
+    {
+        velocity = newVel;
     }
 
     public void AddMovementState(IStateSO newState)
@@ -173,30 +206,34 @@ public class BearControllerSM : MonoBehaviour
     public bool CanJump()
     {
         bool nearGround = grounded || coyoteTime;
-        return numAvailableJumps > 0 && nearGround;
+        return nearGround || numAvailableJumps > 0;
     }
 
     public void UseJump()
     {
-        numAvailableJumps--;
+        if (!grounded || coyoteTime)
+        {
+            numAvailableJumps--;
+        }
 
         coyoteTime = false;
         grounded = false;
+        jumpInput = false;
         if (resetCoyoteTime != null)
         {
             StopCoroutine(resetCoyoteTime);
         }
     }
 
-    public void OnMove(InputValue val)
+    public void OnMove(InputAction.CallbackContext obj)
     {
-        moveInput = val.Get<Vector2>();
+        moveInput = obj.ReadValue<Vector2>();
     }
 
-    public void OnJump(InputValue val)
+    public void OnJump(InputAction.CallbackContext obj)
     {
         bool jumpWasHeld = jumpHeld;
-        jumpHeld = val.Get<bool>();
+        jumpHeld = obj.ReadValue<float>() > 0.01f;
 
         if (jumpHeld && !jumpWasHeld) // just pressed jump
         {
@@ -209,14 +246,14 @@ public class BearControllerSM : MonoBehaviour
         }
     }
 
-    public void OnClimb(InputValue val)
+    public void OnClimb(InputAction.CallbackContext obj)
     {
-        climbHeld = val.Get<bool>();
+        climbHeld = obj.ReadValue<bool>();
     }
 
-    public void OnGrapple(InputValue val)
+    public void OnGrapple(InputAction.CallbackContext obj)
     {
-        grappleInput = val.Get<bool>();
+        grappleInput = obj.ReadValue<bool>();
     }
 
     IEnumerator ResetJump()

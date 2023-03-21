@@ -20,7 +20,7 @@ public struct Transition
 
 public abstract class IStateSO : ScriptableObject
 {
-    public State stateType;
+    public StateType stateType;
 
     public List<Transition> transitions;
 

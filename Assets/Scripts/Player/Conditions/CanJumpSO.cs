@@ -2,17 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CanJumpSO : MonoBehaviour
+[CreateAssetMenu(menuName = "CharacterStates/Conditions/CanJump")]
+public class CanJumpSO : IConditionSO
 {
-    // Start is called before the first frame update
-    void Start()
+    public override bool IsConditionMet()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        return brain.CanJump() && brain.jumpInput;
     }
 }

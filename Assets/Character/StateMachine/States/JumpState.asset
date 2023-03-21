@@ -9,22 +9,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7f7554217790d7842b896d7ab10a230b, type: 3}
-  m_Name: IdleState
+  m_Script: {fileID: 11500000, guid: 31e99b1aca1e4084d8a30bbff68b7d7c, type: 3}
+  m_Name: JumpState
   m_EditorClassIdentifier: 
-  stateType: 0
+  stateType: 3
   transitions:
-  - targetState: {fileID: 11400000, guid: 2998dd6b6e827f6438bdeb08795eb87f, type: 2}
+  - targetState: {fileID: 11400000}
     conditions:
     - condition: {fileID: 11400000, guid: d5b5f0fd77465d34ea07662ffa08b3a6, type: 2}
       inverted: 0
   - targetState: {fileID: 11400000, guid: 9a885ef2c572dc84593088543f9c547a, type: 2}
     conditions:
-    - condition: {fileID: 11400000, guid: b3d1e78a5c3a9584abc39da111bb0fcf, type: 2}
+    - condition: {fileID: 11400000, guid: dde32fbfc730b3043a3da2375d0badf5, type: 2}
       inverted: 1
-  - targetState: {fileID: 11400000, guid: e514fed6d929fe744bbfdc8d0b68b3ec, type: 2}
-    conditions:
-    - condition: {fileID: 11400000, guid: cf57c1d64689c6b48a905c402aa929ca, type: 2}
-      inverted: 0
-  maxStopTime: 0.05
-  walkSpeed: 6
+  jumpSpeed: 5
+  maxBoostLength: 0.25
+  decelTime: 0.2
+  strafeSpeed: 5

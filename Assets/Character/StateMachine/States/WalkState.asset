@@ -9,10 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7f7554217790d7842b896d7ab10a230b, type: 3}
-  m_Name: IdleState
+  m_Script: {fileID: 11500000, guid: 0fb106b92fe6858488206f65228be441, type: 3}
+  m_Name: WalkState
   m_EditorClassIdentifier: 
-  stateType: 0
+  stateType: 1
   transitions:
   - targetState: {fileID: 11400000, guid: 2998dd6b6e827f6438bdeb08795eb87f, type: 2}
     conditions:
@@ -22,9 +22,11 @@ MonoBehaviour:
     conditions:
     - condition: {fileID: 11400000, guid: b3d1e78a5c3a9584abc39da111bb0fcf, type: 2}
       inverted: 1
-  - targetState: {fileID: 11400000, guid: e514fed6d929fe744bbfdc8d0b68b3ec, type: 2}
+  - targetState: {fileID: 11400000, guid: 165c05b4e63ebf74eb73c2f3f3278c90, type: 2}
     conditions:
     - condition: {fileID: 11400000, guid: cf57c1d64689c6b48a905c402aa929ca, type: 2}
-      inverted: 0
-  maxStopTime: 0.05
+      inverted: 1
   walkSpeed: 6
+  accel: 10
+  inputDeadzone: 0.05
+  turnBounciness: 1

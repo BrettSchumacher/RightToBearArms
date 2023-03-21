@@ -4,7 +4,7 @@ using UnityEngine;
 
 public abstract class IState
 {
-    public State stateType;
+    public StateType stateType;
 
     protected List<Transition> transitions;
     protected BearControllerSM brain;
