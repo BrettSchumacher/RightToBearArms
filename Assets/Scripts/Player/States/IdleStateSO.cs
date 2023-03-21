@@ -2,20 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class IdleState : IState
-{
-    public float speedThreshold = 0.05f;
-
-    public IdleState(BearControllerSM brain) : base(brain)
-    {
-    }
-
-    public override bool StateTriggered()
-    {
-        return brain.IsGrounded() && brain.GetVelocity().magnitude < speedThreshold;
-    }
-}
-
+[CreateAssetMenu(menuName = "CharacterStates/States/IdleState")]
 public class IdleStateSO : IStateSO
 {
     public float speedThreshold = 0.05f;
@@ -25,7 +12,7 @@ public class IdleStateSO : IStateSO
     {
         if (instance == null)
         {
-            instance = new IdleState(brain);
+            instance = new IdleState(brain, transitions);
             idle = (IdleState)instance;
 
             idle.speedThreshold = speedThreshold;
@@ -35,3 +22,14 @@ public class IdleStateSO : IStateSO
         return instance;
     }
 }
+
+public class IdleState : IState
+{
+    public float speedThreshold = 0.05f;
+
+    public IdleState(BearControllerSM brain, List<Transition> transitions) : base(brain, transitions)
+    {
+    }
+}
+
+

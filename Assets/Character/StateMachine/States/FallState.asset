@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1785750351d1bd441a92008686621637, type: 3}
+  m_Name: FallState
+  m_EditorClassIdentifier: 
+  stateType: 4
+  transitions:
+  - targetState: {fileID: 11400000, guid: 165c05b4e63ebf74eb73c2f3f3278c90, type: 2}
+    conditions:
+    - condition: {fileID: 11400000, guid: b3d1e78a5c3a9584abc39da111bb0fcf, type: 2}
+      inverted: 0
