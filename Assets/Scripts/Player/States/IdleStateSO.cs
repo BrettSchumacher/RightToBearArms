@@ -2,11 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "CharacterStates/States/IdleState")]
+[CreateAssetMenu(menuName = "Character/States/IdleState")]
 public class IdleStateSO : IStateSO
 {
-    public float maxStopTime = 0.2f;
-    public float walkSpeed = 2f;
     public IdleState idle;
 
     public override IState GetStateInstance(BearControllerSM brain)
@@ -16,9 +14,11 @@ public class IdleStateSO : IStateSO
             instance = new IdleState(brain, transitions);
             idle = (IdleState)instance;
 
+            MovementDataSO data = brain.movementData;
+
             idle.stateType = stateType;
-            idle.maxStopTime = maxStopTime;
-            idle.walkSpeed = walkSpeed;
+            idle.timeTorestFromMaxWalk = data.timeToRestFromMaxWalk;
+            idle.walkSpeed = data.walkSpeed;
         }
 
         return instance;
@@ -27,11 +27,9 @@ public class IdleStateSO : IStateSO
 
 public class IdleState : IState
 {
-    public float maxStopTime;
+    public float timeTorestFromMaxWalk;
     public float walkSpeed;
-    float startVel;
-    float startTime;
-    float endTime;
+    float decel;
 
     public IdleState(BearControllerSM brain, List<Transition> transitions) : base(brain, transitions)
     {
@@ -40,33 +38,28 @@ public class IdleState : IState
     public override void OnStateEnter()
     {
         base.OnStateEnter();
-        startVel = brain.GetVelocity().x;
-        startTime = Time.time;
-
-        if (Mathf.Abs(startVel) < 0.001)
-        {
-            endTime = startTime - 0.1f;
-        }
-        else
-        {
-            endTime = startTime + maxStopTime * Mathf.Min(Mathf.Abs(startVel) / walkSpeed, 1f);
-        }
+        decel = -walkSpeed / timeTorestFromMaxWalk;
     }
 
     public override void OnStateUpdate(float dt)
     {
         base.OnStateUpdate(dt);
 
-        float vel;
+        float vel = brain.GetVelocity().x;
 
-        if (Time.time > endTime)
+        if (Mathf.Approximately(vel, 0f))
         {
             vel = 0f;
         }
+        else if (vel < 0f)
+        {
+            vel -= decel * dt;
+            vel = vel > 0f ? 0f : vel;
+        }
         else
         {
-            float t = (Time.time - startTime) / (endTime - startTime);
-            vel = (1f - t) * startVel;
+            vel += decel * dt;
+            vel = vel < 0f ? 0f : vel;
         }
 
         brain.SetXVelocity(vel);

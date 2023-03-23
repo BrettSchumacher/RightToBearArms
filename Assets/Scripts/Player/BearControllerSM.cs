@@ -8,13 +8,17 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(BearAnimManager))]
 public class BearControllerSM : MonoBehaviour
 {
+    public static BearControllerSM instance;
+
+    public MovementDataSO movementData;
     public List<IStateSO> startingStates;
     public float jumpBufferTime = 0.1f;
     public float coyoteTimeLength = 0.1f;
-    public int startingAirJumps = 1;
     public float groundRaycastDist = 0.01f;
     public float wallRaycastDist = 0.05f;
     public LayerMask obstacleMask;
+    public Collider2D headCollider;
+    public DistanceJoint2D swingJoint;
 
     public UnityAction<StateType> OnStateEnter;
 
@@ -25,22 +29,44 @@ public class BearControllerSM : MonoBehaviour
     int numJumps;
     int numAvailableJumps;
     bool coyoteTime;
+    bool spriteFlipped;
     Vector2 velocity;
 
     [HideInInspector] public bool grounded = true;
     [HideInInspector] public bool rightWall = false;
     [HideInInspector] public bool leftWall = false;
+    [HideInInspector] public bool ceiling = false;
     [HideInInspector] public bool jumpHeld;
     [HideInInspector] public bool jumpInput;
     [HideInInspector] public bool climbHeld;
+    [HideInInspector] public bool grappleHeld;
     [HideInInspector] public bool grappleInput;
+    [HideInInspector] public bool grappling = false;
 
     [HideInInspector] public GameObject rightWallObj;
     [HideInInspector] public GameObject leftWallObj;
 
     Coroutine resetJump;
+    Coroutine resetGrapple;
     Coroutine resetCoyoteTime;
     public Vector2 moveInput { get; set; }
+
+    private void Awake()
+    {
+        if (instance != null && instance != this)
+        {
+            Debug.LogError("Duplicate BearController found! Deleteing self");
+            Destroy(gameObject);
+            return;
+        }
+
+        instance = this;
+    }
+
+    private void OnDestroy()
+    {
+        instance = null;
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -54,7 +80,7 @@ public class BearControllerSM : MonoBehaviour
 
         OnStateEnter?.Invoke(currentState.stateType);
 
-        numJumps = startingAirJumps;
+        numJumps = movementData.startingAirJumps;
         numAvailableJumps = numJumps;
     }
 
@@ -71,6 +97,17 @@ public class BearControllerSM : MonoBehaviour
         }
 
         rb.velocity = velocity;
+
+        if (rb.velocity.x < -movementData.spriteFlipThreshold && !spriteFlipped)
+        {
+            spriteFlipped = true;
+        }
+        if (rb.velocity.x > movementData.spriteFlipThreshold && spriteFlipped)
+        {
+            spriteFlipped = false;
+        }
+
+        transform.localScale = new Vector3(transform.localScale.x, transform.localScale.y, spriteFlipped ? -1f : 1f);
     }
 
     private void FixedUpdate()
@@ -88,22 +125,27 @@ public class BearControllerSM : MonoBehaviour
         grounded = false;
         leftWall = false;
         rightWall = false;
+        ceiling = false;
 
         leftWallObj = null;
         rightWallObj = null;
 
         foreach (ContactPoint2D contact in contacts)
         {
-            if (contact.normal.y > 0.5f)
+            if (rb.velocity.y < 0.001f && contact.normal.y > 0.5f)
             {
                 grounded = true;
             }
-            if (contact.normal.x > 0.5f)
+            if (rb.velocity.y > -0.001f && contact.normal.y < -0.5f)
+            {
+                ceiling = true;
+            }
+            if (rb.velocity.x < 0.001f && contact.normal.x > 0.5f)
             {
                 leftWall = true;
                 leftWallObj = contact.collider.gameObject;
             }
-            if (contact.normal.x < -0.5f)
+            if (rb.velocity.x > -0.001f && contact.normal.x < -0.5f)
             {
                 rightWall = true;
                 rightWallObj = contact.collider.gameObject;
@@ -121,7 +163,7 @@ public class BearControllerSM : MonoBehaviour
         }
         else if (!wasGrounded && grounded) // hit the ground
         {
-            numAvailableJumps = numJumps;
+            RefreshJumps();
         }
     }
 
@@ -154,7 +196,7 @@ public class BearControllerSM : MonoBehaviour
 
     void TransitionStates(IState newState)
     {
-        currentState.OnStateExit();
+        currentState.OnStateExit(newState.stateType);
         currentState = newState;
         currentState.OnStateEnter();
         currentTransitions = newState.GetTransitions();
@@ -179,6 +221,11 @@ public class BearControllerSM : MonoBehaviour
     public void SetVelocity(Vector2 newVel)
     {
         velocity = newVel;
+    }
+
+    public void SetPosition(Vector2 pos)
+    {
+        rb.MovePosition(pos);
     }
 
     public void AddMovementState(IStateSO newState)
@@ -209,9 +256,9 @@ public class BearControllerSM : MonoBehaviour
         return nearGround || numAvailableJumps > 0;
     }
 
-    public void UseJump()
+    public void UseJump(bool decrement = true)
     {
-        if (!grounded || coyoteTime)
+        if (decrement && !(grounded || coyoteTime))
         {
             numAvailableJumps--;
         }
@@ -222,6 +269,17 @@ public class BearControllerSM : MonoBehaviour
         if (resetCoyoteTime != null)
         {
             StopCoroutine(resetCoyoteTime);
+            resetCoyoteTime = null;
+        }
+    }
+
+    public void UseGrapple()
+    {
+        grappleInput = false;
+        if (resetGrapple != null)
+        {
+            StopCoroutine(resetGrapple);
+            resetGrapple = null;
         }
     }
 
@@ -233,7 +291,7 @@ public class BearControllerSM : MonoBehaviour
     public void OnJump(InputAction.CallbackContext obj)
     {
         bool jumpWasHeld = jumpHeld;
-        jumpHeld = obj.ReadValue<float>() > 0.01f;
+        jumpHeld = obj.performed;
 
         if (jumpHeld && !jumpWasHeld) // just pressed jump
         {
@@ -248,12 +306,23 @@ public class BearControllerSM : MonoBehaviour
 
     public void OnClimb(InputAction.CallbackContext obj)
     {
-        climbHeld = obj.ReadValue<bool>();
+        climbHeld = obj.performed;
     }
 
     public void OnGrapple(InputAction.CallbackContext obj)
     {
-        grappleInput = obj.ReadValue<bool>();
+        bool grappleWasHeld = grappleHeld;
+        grappleHeld = obj.performed;
+
+        if (grappleHeld && !grappleWasHeld) // just pressed grapple
+        {
+            grappleInput = true;
+            if (resetGrapple != null)
+            {
+                StopCoroutine(resetGrapple);
+            }
+            resetGrapple = StartCoroutine(ResetGrapple());
+        }
     }
 
     IEnumerator ResetJump()
@@ -263,7 +332,15 @@ public class BearControllerSM : MonoBehaviour
         resetJump = null;
         jumpInput = false;
     }
-    
+
+    IEnumerator ResetGrapple()
+    {
+        yield return new WaitForSeconds(jumpBufferTime);
+
+        resetGrapple = null;
+        grappleInput = false;
+    }
+
     IEnumerator StopCoyoteTime()
     {
         yield return new WaitForSeconds(coyoteTimeLength);

@@ -12,10 +12,10 @@ TagManager:
   - Water
   - UI
   - Obstacle
-  - 
-  - 
-  - 
-  - 
+  - Player
+  - Climbable
+  - PlayerIgnore
+  - OneWaySolid
   - 
   - 
   - 
@@ -40,4 +40,10 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Player
+    uniqueID: 431025925
+    locked: 0
+  - name: Foreground
+    uniqueID: 3753957859
     locked: 0

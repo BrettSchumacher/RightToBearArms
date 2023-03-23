@@ -2,16 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "CharacterStates/States/FallState")]
+[CreateAssetMenu(menuName = "Character/States/FallState")]
 public class FallStateSO : IStateSO
 {
-    public float maxFallSpeed = 1f;
-    public float maxBoostedFallSpeed = 2f;
-    public float strafeSpeed = 1f;
-    public float timeToMaxFromRest = 1f;
-    public float timeToBoostFromMax = 0.2f;
-    public float timeToMaxFromBoost = 0.15f;
-
     public FallState fall;
     public override IState GetStateInstance(BearControllerSM brain)
     {
@@ -20,13 +13,18 @@ public class FallStateSO : IStateSO
             instance = new FallState(brain, transitions);
             fall = (FallState)instance;
 
+            MovementDataSO data = brain.movementData;
+
             fall.stateType = stateType;
-            fall.maxFallSpeed = maxFallSpeed < 0f ? maxFallSpeed : -maxFallSpeed;
-            fall.maxBoostedFallSpeed = maxBoostedFallSpeed < 0f ? maxBoostedFallSpeed : -maxBoostedFallSpeed;
-            fall.strafeSpeed = strafeSpeed;
-            fall.timeToMaxFromRest = timeToMaxFromRest;
-            fall.timeToBoostFromMax = timeToBoostFromMax;
-            fall.timeToMaxFromBoost = timeToMaxFromBoost;
+            fall.maxFallSpeed = data.maxFallSpeed < 0f ? data.maxFallSpeed : -data.maxFallSpeed;
+            fall.maxBoostedFallSpeed = data.maxBoostedFallSpeed < 0f ? data.maxBoostedFallSpeed : -data.maxBoostedFallSpeed;
+            fall.strafeSpeed = data.strafeSpeed;
+            fall.timeToMaxFromRest = data.timeToMaxFallFromRest;
+            fall.timeToBoostFromMax = data.timeToBoostFromMaxFall;
+            fall.timeToMaxFromBoost = data.timeToMaxFallFromBoost;
+            fall.turnBounciness = data.turnBounciness;
+            fall.timeToMaxStrafeFromRest = data.timeToMaxStrafeFromRest;
+            fall.timeToRestFromMaxStrafe = data.timeToRestFromMaxStrafe;
         }
 
         return instance;
@@ -41,10 +39,16 @@ public class FallState : IState
     public float timeToMaxFromRest;
     public float timeToBoostFromMax;
     public float timeToMaxFromBoost;
+    public float turnBounciness;
+    public float timeToMaxStrafeFromRest;
+    public float timeToRestFromMaxStrafe;
 
     float normAccel;
     float boostAccel;
     float boostDecel;
+
+    float strafeAccel;
+    float strafeDecel;
 
     float initialStrafeSpeed;
 
@@ -59,6 +63,9 @@ public class FallState : IState
         normAccel = maxFallSpeed / timeToMaxFromRest;
         boostAccel = (maxBoostedFallSpeed - maxFallSpeed) / timeToBoostFromMax;
         boostDecel = (maxFallSpeed - maxBoostedFallSpeed) / timeToMaxFromBoost;
+
+        strafeAccel = strafeSpeed / timeToMaxStrafeFromRest;
+        strafeDecel = strafeSpeed / timeToRestFromMaxStrafe;
 
         initialStrafeSpeed = Mathf.Max(strafeSpeed, Mathf.Abs(brain.GetVelocity().x));
     }
@@ -89,7 +96,29 @@ public class FallState : IState
             vel.y = vel.y > maxSpeed ? maxSpeed : vel.y;
         }
 
-        vel.x = inputs.x * initialStrafeSpeed;
+        float goalVel = inputs.x * initialStrafeSpeed;
+
+        if (vel.x < -0.001f && goalVel > 0.001f || vel.x > 0.001f && goalVel < -0.001f)
+        {
+            vel.x *= -1f * turnBounciness;
+        }
+
+        float diffSign = Mathf.Sign(goalVel - vel.x);
+
+        if (Mathf.Approximately(vel.x, goalVel))
+        {
+            vel.x = goalVel;
+        }
+        else if (Mathf.Abs(vel.x) < Mathf.Abs(goalVel))
+        {
+            vel.x += diffSign * strafeAccel * dt;
+            vel.x = (Mathf.Sign(goalVel - vel.x) != diffSign) ? goalVel : vel.x;
+        }
+        else
+        {
+            vel.x += diffSign * strafeDecel * dt;
+            vel.x = (Mathf.Sign(goalVel - vel.x) != diffSign) ? goalVel : vel.x;
+        }
 
         if (Mathf.Abs(vel.x) < initialStrafeSpeed)
         {

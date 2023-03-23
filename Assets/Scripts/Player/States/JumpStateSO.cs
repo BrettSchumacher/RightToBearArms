@@ -2,16 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "CharacterStates/States/JumpState")]
+[CreateAssetMenu(menuName = "Character/States/JumpState")]
 public class JumpStateSO : IStateSO
 {
     JumpState jump;
 
-    public float jumpSpeed = 5f;
-    public float maxBoostLength = 1f;
-    public float decelTime = 1f;
-    public float strafeSpeed = 3f;
-    public float cooldown = 0.02f;
+    public bool decrementJumps = true;
 
     public override IState GetStateInstance(BearControllerSM brain)
     {
@@ -20,12 +16,14 @@ public class JumpStateSO : IStateSO
             instance = new JumpState(brain, transitions);
             jump = (JumpState)instance;
 
+            MovementDataSO data = brain.movementData;
+
             jump.stateType = stateType;
-            jump.jumpSpeed = jumpSpeed;
-            jump.maxBoostLength = maxBoostLength;
-            jump.decelTime = decelTime;
-            jump.strafeSpeed = strafeSpeed;
-            jump.cooldown = cooldown;
+            jump.jumpSpeed = data.jumpSpeed;
+            jump.maxBoostLength = data.maxBoostLength;
+            jump.decelTime = data.decelTime;
+            jump.strafeSpeed = data.strafeSpeed;
+            jump.decrementJumps = decrementJumps;
         }
 
         return instance;
@@ -39,13 +37,13 @@ public class JumpState : IState
     public float decelTime;
     public float strafeSpeed;
     public float cooldown;
+    public bool decrementJumps;
 
     float initialStrafeSpeed;
     float decel;
 
     bool holdingJump;
     float boostExpire;
-    float cooldownDone;
 
     public JumpState(BearControllerSM brain, List<Transition> transitions) : base(brain, transitions)
     {
@@ -56,14 +54,13 @@ public class JumpState : IState
     {
         base.OnStateEnter();
 
-        brain.UseJump();
+        brain.UseJump(decrementJumps);
         brain.grounded = false;
-
+      
         decel = -jumpSpeed / decelTime;
         initialStrafeSpeed = Mathf.Max(strafeSpeed, Mathf.Abs(brain.GetVelocity().x));
         holdingJump = brain.jumpHeld;
         boostExpire = Time.time + maxBoostLength;
-        cooldownDone = Time.time + cooldown;
 
         brain.SetYVelocity(jumpSpeed);
     }
@@ -94,10 +91,5 @@ public class JumpState : IState
         }
 
         brain.SetVelocity(vel);
-    }
-
-    public override bool CanTransition()
-    {
-        return Time.time > cooldownDone;
     }
 }

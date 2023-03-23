@@ -26,7 +26,7 @@ public abstract class IState
     public virtual void OnStateEnter() { }
     public virtual void OnStateUpdate(float dt) { }
     public virtual void OnStateFixedUpdate(float fixedDt) { }
-    public virtual void OnStateExit() { }
+    public virtual void OnStateExit(StateType nextState) { }
 
     public virtual bool CanTransition() { return true; }
 

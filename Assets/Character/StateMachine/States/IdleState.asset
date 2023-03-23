@@ -22,9 +22,13 @@ MonoBehaviour:
     conditions:
     - condition: {fileID: 11400000, guid: b3d1e78a5c3a9584abc39da111bb0fcf, type: 2}
       inverted: 1
+  - targetState: {fileID: 11400000, guid: 121a2dc3b25793549ac39b4b04b7ce1e, type: 2}
+    conditions:
+    - condition: {fileID: 11400000, guid: 588407fe15740f542be62b3b986e36af, type: 2}
+      inverted: 0
+    - condition: {fileID: 11400000, guid: b3e43eae99b5c5445993adb4ab12db4b, type: 2}
+      inverted: 0
   - targetState: {fileID: 11400000, guid: e514fed6d929fe744bbfdc8d0b68b3ec, type: 2}
     conditions:
     - condition: {fileID: 11400000, guid: cf57c1d64689c6b48a905c402aa929ca, type: 2}
-      inverted: 0
-  maxStopTime: 0.05
-  walkSpeed: 6
+      inverted: 1

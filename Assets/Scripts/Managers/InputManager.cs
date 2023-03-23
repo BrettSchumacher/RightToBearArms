@@ -15,6 +15,8 @@ public class InputManager : MonoBehaviour
     InputScheme currentScheme;
     Stack<InputScheme> schemeStack;
 
+    ControlScheme currentControls = ControlScheme.KEYBOARD;
+
     // Start is called before the first frame update
     void Awake()
     {
@@ -56,6 +58,18 @@ public class InputManager : MonoBehaviour
         ChangeInputSchemeHelper(schemeStack.Pop());
     }
 
+    public void ControlsChanged()
+    {
+        if (input.currentControlScheme == "Controller")
+        {
+            currentControls = ControlScheme.CONTROLLER;
+        }
+        else
+        {
+            currentControls = ControlScheme.KEYBOARD;
+        }
+    }
+
 
     public static string InputSchemeToName(InputScheme scheme)
     {
@@ -84,6 +98,11 @@ public class InputManager : MonoBehaviour
     {
         instance.PopInputSchemeHelper();
     }
+
+    public static ControlScheme GetCurrentControlScheme()
+    {
+        return instance.currentControls;
+    }
 }
 
 public enum InputScheme
@@ -91,5 +110,11 @@ public enum InputScheme
     INGAME,
     MENU,
     DIALOGUE,
+}
+
+public enum ControlScheme
+{ 
+    KEYBOARD,
+    CONTROLLER
 }
 

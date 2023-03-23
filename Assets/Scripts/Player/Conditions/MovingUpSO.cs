@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "CharacterStates/Conditions/MovingUp")]
+[CreateAssetMenu(menuName = "Character/Conditions/MovingUp")]
 public class MovingUpSO : IConditionSO
 {
     public override bool IsConditionMet()

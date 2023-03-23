@@ -8,5 +8,10 @@ public enum StateType
     RUN,
     CLIMB,
     JUMP,
-    FALL
+    FALL,
+    WALL_SLIDE,
+    WALL_JUMP,
+    GRAPPLE_SHOOT,
+    GRAPPLE_SWING,
+    GRAPPLE_RELEASE,
 }

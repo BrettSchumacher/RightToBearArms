@@ -10,6 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d7c400d0a4db59d4d905f4f30c848aad, type: 3}
-  m_Name: XInput
+  m_Name: RightInput
   m_EditorClassIdentifier: 
-  deadzone: 0.05
+  min: 0.05
+  max: 2

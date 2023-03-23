@@ -2,13 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "CharacterStates/Conditions/XInput")]
+[CreateAssetMenu(menuName = "Character/Conditions/XInput")]
 public class XInputSO : IConditionSO
 {
-    public float deadzone = 0.05f;
+    public float min;
+    public float max;
 
     public override bool IsConditionMet()
     {
-        return Mathf.Abs(brain.moveInput.x) > deadzone;
+        return brain.moveInput.x >= min && brain.moveInput.x <= max;
     }
 }

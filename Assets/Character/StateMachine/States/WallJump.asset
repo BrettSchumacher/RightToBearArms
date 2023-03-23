@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba298b071923f7c4fb4d0329b572b8bf, type: 3}
+  m_Name: WallJump
+  m_EditorClassIdentifier: 
+  stateType: 6
+  transitions:
+  - targetState: {fileID: 11400000, guid: 2ae1439b4655121409d726a5df641232, type: 2}
+    conditions:
+    - condition: {fileID: 11400000, guid: b4862d8b9f96d7d429ccca635b5edf0e, type: 2}
+      inverted: 0
+    - condition: {fileID: 11400000, guid: 94a170933a452784f94ab18d1df03a19, type: 2}
+      inverted: 0
+    - condition: {fileID: 11400000, guid: b74552dec4c449b4bbeb8d251dabc298, type: 2}
+      inverted: 1
+  - targetState: {fileID: 11400000}
+    conditions:
+    - condition: {fileID: 11400000, guid: b4862d8b9f96d7d429ccca635b5edf0e, type: 2}
+      inverted: 0
+    - condition: {fileID: 11400000, guid: 94a170933a452784f94ab18d1df03a19, type: 2}
+      inverted: 0
+  - targetState: {fileID: 11400000, guid: 2998dd6b6e827f6438bdeb08795eb87f, type: 2}
+    conditions:
+    - condition: {fileID: 11400000, guid: d5b5f0fd77465d34ea07662ffa08b3a6, type: 2}
+      inverted: 0
+  - targetState: {fileID: 11400000, guid: 121a2dc3b25793549ac39b4b04b7ce1e, type: 2}
+    conditions:
+    - condition: {fileID: 11400000, guid: 588407fe15740f542be62b3b986e36af, type: 2}
+      inverted: 0
+    - condition: {fileID: 11400000, guid: b3e43eae99b5c5445993adb4ab12db4b, type: 2}
+      inverted: 0
+  - targetState: {fileID: 11400000, guid: 9a885ef2c572dc84593088543f9c547a, type: 2}
+    conditions:
+    - condition: {fileID: 11400000, guid: dde32fbfc730b3043a3da2375d0badf5, type: 2}
+      inverted: 1
