@@ -36,6 +36,8 @@ public class GrappleSwingSO : IStateSO
             grappleSwing.grappleUpGravity = data.grappleUpGravity;
             grappleSwing.grappleDownGravity = data.grappleDownGravity;
             grappleSwing.grappleRetractSpeed = data.grappleManualRetractSpeed;
+            grappleSwing.snapReleaseAngle = data.releaseSnapAngle;
+            grappleSwing.releaseSpeedBoost = data.releaseSpeedBoost;
         }
 
         return instance;
@@ -65,6 +67,8 @@ public class GrappleSwing : IState
     public float grappleUpGravity;
     public float grappleDownGravity;
     public float grappleRetractSpeed;
+    public float snapReleaseAngle;
+    public float releaseSpeedBoost;
 
     float walkAccel;
     float walkDecel;
@@ -86,6 +90,8 @@ public class GrappleSwing : IState
     {
         base.OnStateEnter();
 
+        Debug.Log("SWING");
+
         prevPosition = brain.transform.position;
         prevTime = Time.time;
 
@@ -96,8 +102,8 @@ public class GrappleSwing : IState
         strafeAccel = strafeSpeed / timeToMaxStrafe;
         strafeDecel = strafeSpeed / timeToRestStrafe;
 
-        ropeLength = GrappleHookManager.GetRopeLength();
-        rachetShorten = 0f;
+        ropeLength = grappleLengthRachetAmt * Mathf.Ceil(GrappleHookManager.GetRopeLength() / grappleLengthRachetAmt);
+        rachetShorten = ropeLength - GrappleHookManager.GetRopeLength();
         brain.swingJoint.enabled = true;
         brain.swingJoint.distance = GrappleHookManager.GetBearSegmentLength();
         brain.swingJoint.connectedAnchor = GrappleHookManager.GetBearRopePivot();
@@ -110,13 +116,29 @@ public class GrappleSwing : IState
         base.OnStateExit(nextState);
         brain.swingJoint.enabled = false;
         brain.GetComponent<Rigidbody2D>().gravityScale = 0f;
+
+        Vector2 vel = brain.GetVelocity();
+        Vector2 inputs = brain.moveInput;
+        float angle = Vector2.SignedAngle(Vector2.right, vel);
+        angle = snapReleaseAngle * Mathf.Round(angle / snapReleaseAngle);
+        Vector2 newVel = new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sign(angle * Mathf.Deg2Rad));
+
+        if (inputs.magnitude > 0.01f)
+        {
+            newVel *= vel.magnitude;
+            newVel += inputs * releaseSpeedBoost;
+        }
+        else
+        {
+            newVel *= vel.magnitude + releaseSpeedBoost;
+        }
+
+        brain.SetVelocity(newVel);
     }
 
     public override void OnStateUpdate(float dt)
     {
         base.OnStateUpdate(dt);
-
-        GrappleHookManager.instance.GrappleUpdate(dt);
 
         Vector2 pivot = GrappleHookManager.GetBearRopePivot();
         Vector2 origin = GrappleHookManager.instance.grappleOrigin.position;

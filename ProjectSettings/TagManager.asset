@@ -16,8 +16,8 @@ TagManager:
   - Climbable
   - PlayerIgnore
   - OneWaySolid
-  - 
-  - 
+  - PlayerInteract
+  - Slippery
   - 
   - 
   - 

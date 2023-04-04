@@ -21,6 +21,7 @@ public class JumpStateSO : IStateSO
             jump.stateType = stateType;
             jump.jumpSpeed = data.jumpSpeed;
             jump.maxBoostLength = data.maxBoostLength;
+            jump.jumpReleaseSpeed = data.jumpReleaseSpeed;
             jump.decelTime = data.decelTime;
             jump.strafeSpeed = data.strafeSpeed;
             jump.decrementJumps = decrementJumps;
@@ -33,6 +34,7 @@ public class JumpStateSO : IStateSO
 public class JumpState : IState
 {
     public float jumpSpeed;
+    public float jumpReleaseSpeed;
     public float maxBoostLength;
     public float decelTime;
     public float strafeSpeed;
@@ -72,11 +74,16 @@ public class JumpState : IState
         Vector2 inputs = brain.moveInput;
         Vector2 vel = brain.GetVelocity();
 
+        bool wasHoldingJump = holdingJump;
         holdingJump = holdingJump && brain.jumpHeld;
 
         if (holdingJump && Time.time < boostExpire)
         {
             vel.y = jumpSpeed;
+        }
+        else if (!holdingJump && wasHoldingJump) // released jump early
+        {
+            vel.y = jumpReleaseSpeed;
         }
         else
         {

@@ -14,6 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stateType: 1
   transitions:
+  - targetState: {fileID: 11400000, guid: 5f569a3b071970d4e982335f7494c6e0, type: 2}
+    conditions:
+    - condition: {fileID: 11400000, guid: c5d718c568214184db0bbbdcf57e22ac, type: 2}
+      inverted: 0
   - targetState: {fileID: 11400000, guid: 2998dd6b6e827f6438bdeb08795eb87f, type: 2}
     conditions:
     - condition: {fileID: 11400000, guid: d5b5f0fd77465d34ea07662ffa08b3a6, type: 2}

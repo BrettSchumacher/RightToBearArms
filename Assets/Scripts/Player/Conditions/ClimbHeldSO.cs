@@ -7,6 +7,6 @@ public class ClimbHeldSO : IConditionSO
 {
     public override bool IsConditionMet()
     {
-        return brain.climbHeld;
+        return true; // brain.climbHeld;
     }
 }

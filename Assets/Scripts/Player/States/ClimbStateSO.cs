@@ -64,7 +64,7 @@ public class ClimbState : IState
     {
         base.OnStateExit(nextState);
 
-        if (nextState == StateType.FALL && !(brain.leftWall || brain.rightWall))
+        if (nextState == StateType.FALL && !(brain.leftWall || brain.rightWall) && brain.GetVelocity().y > 0f)
         {
             brain.SetXVelocity(leftClimb ? -climbAroundBoost : climbAroundBoost);
         }

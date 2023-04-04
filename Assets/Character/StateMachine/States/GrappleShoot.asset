@@ -19,6 +19,8 @@ MonoBehaviour:
     - condition: {fileID: 11400000, guid: 1d919d60df0d8f743beacac46667cfed, type: 2}
       inverted: 1
   - targetState: {fileID: 11400000, guid: 6f3d1023bd4e70049ab1edeedde2b014, type: 2}
-    conditions: []
+    conditions:
+    - condition: {fileID: 11400000, guid: 905346b23e6daa447ab753fef1805a85, type: 2}
+      inverted: 0
   - targetState: {fileID: 11400000, guid: e65b740e9402e1f47b797f16a5194927, type: 2}
     conditions: []

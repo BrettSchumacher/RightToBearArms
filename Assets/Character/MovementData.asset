@@ -20,7 +20,8 @@ MonoBehaviour:
   startingAirJumps: 1
   jumpSpeed: 7
   maxBoostLength: 0.17
-  decelTime: 0.12
+  jumpReleaseSpeed: 1.5
+  decelTime: 0.15
   strafeSpeed: 7
   timeToMaxStrafeFromRest: 0.12
   timeToRestFromMaxStrafe: 0.07
@@ -39,11 +40,11 @@ MonoBehaviour:
   timeToMaxClimbFromRest: 0.05
   timeToRestFromMaxClimb: 0.05
   climbAroundBoost: 10
-  grappleRange: 10
-  grappleShotTimescale: 0.3
+  grappleRange: 12
+  grappleShotTimescale: 1
   grappleRetractTimescale: 1
-  grappleShotDuration: 0.6
-  grappleRetractDuration: 0.3
+  grappleShotDuration: 0.2
+  grappleRetractDuration: 0.2
   grappleHeadLength: 0.1
   drag: 1
   xSwingInfluence: 2.2
@@ -51,16 +52,18 @@ MonoBehaviour:
   ropeWidth: 0.1
   maxAngularVel: 360
   ropePullSnapiness: 1
-  grappleLengthRachetAmt: 1
+  grappleLengthRachetAmt: 12
   grappleUpGravity: 1
   grappleDownGravity: 10
-  grappleManualRetractSpeed: 2
+  grappleManualRetractSpeed: 5
+  releaseSnapAngle: 45
+  releaseSpeedBoost: 2
   grappleInteractMask:
     serializedVersion: 2
-    m_Bits: 321
+    m_Bits: 4417
   grappleBlockMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 4096
   grappleHeadPrefab: {fileID: 3505185692555606215, guid: 6e58593c558977745a885b59eeca2184, type: 3}
   ropeSegmentPrefab: {fileID: 6150137100090549935, guid: 31226bb74ec9b6b47b0be38dcd8ba464, type: 3}
-  spriteFlipThreshold: 0.02
+  spriteFlipThreshold: 0.1

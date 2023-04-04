@@ -48,6 +48,8 @@ public class GrappleRetract : IState
     {
         base.OnStateEnter();
 
+        Debug.Log("RETRACT");
+
         retracted = false;
 
         initialTimeScale = Time.timeScale;
@@ -72,7 +74,7 @@ public class GrappleRetract : IState
 
         Time.timeScale = initialTimeScale;
         brain.grappling = false;
-        GrappleHookManager.instance.ClearRope();
+        // GrappleHookManager.instance.ClearRope();
 
         GrappleHookManager.OnGrappleRetracted -= OnRetracted;
     }
@@ -112,7 +114,7 @@ public class GrappleRetract : IState
 
     public override bool CanTransition()
     {
-        return retracted;
+        return true;
     }
 }
 

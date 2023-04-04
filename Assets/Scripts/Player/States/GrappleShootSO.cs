@@ -71,6 +71,8 @@ public class GrappleShoot : IState
     public override void OnStateEnter()
     {
         base.OnStateEnter();
+        Debug.Log("SHOOT");
+        brain.grappleSuccess = false;
 
         brain.UseGrapple();
         endTimer = Time.unscaledTime + grappleShotDuration;
@@ -119,7 +121,7 @@ public class GrappleShoot : IState
 
         dir = (worldPoint - start).normalized;
 
-        if (Vector2.Distance(start, worldPoint) > grappleRange)
+        if (Vector2.Distance(start, worldPoint) < grappleRange)
         {
             return start + dir * grappleRange;
         }
@@ -130,6 +132,7 @@ public class GrappleShoot : IState
     {
         grappleHit = true;
         brain.grappling = true;
+        brain.grappleSuccess = true;
         endTimer = Time.unscaledTime - 0.1f;
     }
 
@@ -144,6 +147,7 @@ public class GrappleShoot : IState
         base.OnStateExit(nextState);
 
         Time.timeScale = initialTimeScale;
+        GrappleHookManager.StopDeploy();
 
         GrappleHookManager.OnGrappleFailure -= OnFailure;
         GrappleHookManager.OnGrappleSuccess -= OnSuccess;
@@ -153,7 +157,11 @@ public class GrappleShoot : IState
     {
         base.OnStateUpdate(dt);
 
-        GrappleHookManager.instance.GrappleUpdate(dt);
+        if (GrappleHookManager.GetRopeLength() > grappleRange)
+        {
+            grappleHit = false;
+            endTimer = Time.unscaledTime - 0.1f;
+        }
 
         if (!brain.grounded)
         {

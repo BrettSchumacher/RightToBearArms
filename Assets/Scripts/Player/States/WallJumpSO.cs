@@ -53,7 +53,30 @@ public class WallJumpState : IState
         brain.UseJump(false);
         brain.grounded = false;
 
+        ContactFilter2D filter = new ContactFilter2D();
+        filter.SetLayerMask(brain.obstacleMask);
+
+        List<Collider2D> walls = new List<Collider2D>();
+
+        brain.wallJumpCollider.OverlapCollider(filter, walls);
         left = brain.rightWall;
+        if (walls.Count > 0)
+        {
+            Vector2 nearest = walls[0].ClosestPoint(brain.transform.position);
+            float dist = Vector2.Distance(brain.transform.position, nearest);
+            for (int i = 1; i < walls.Count; i++)
+            {
+                Vector2 test = walls[i].ClosestPoint(brain.transform.position);
+                float testDist = Vector2.Distance(test, brain.transform.position);
+                if (testDist < dist)
+                {
+                    nearest = test;
+                    dist = testDist;
+                }
+            }
+
+            left = nearest.x > brain.transform.position.x;
+        }
 
         decel = -jumpSpeed / decelTime;
         initialStrafeSpeed = Mathf.Max(strafeSpeed, Mathf.Abs(brain.GetVelocity().x));

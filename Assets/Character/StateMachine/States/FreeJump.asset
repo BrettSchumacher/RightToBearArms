@@ -16,17 +16,13 @@ MonoBehaviour:
   transitions:
   - targetState: {fileID: 11400000}
     conditions:
-    - condition: {fileID: 11400000, guid: b4862d8b9f96d7d429ccca635b5edf0e, type: 2}
-      inverted: 0
-    - condition: {fileID: 11400000, guid: 94a170933a452784f94ab18d1df03a19, type: 2}
+    - condition: {fileID: 11400000, guid: 3a33910a2958c5c4c8c96995e0cb220d, type: 2}
       inverted: 0
     - condition: {fileID: 11400000, guid: b74552dec4c449b4bbeb8d251dabc298, type: 2}
       inverted: 1
   - targetState: {fileID: 11400000, guid: 729908900dad4694a892d218f471025c, type: 2}
     conditions:
-    - condition: {fileID: 11400000, guid: b4862d8b9f96d7d429ccca635b5edf0e, type: 2}
-      inverted: 0
-    - condition: {fileID: 11400000, guid: 94a170933a452784f94ab18d1df03a19, type: 2}
+    - condition: {fileID: 11400000, guid: 3a33910a2958c5c4c8c96995e0cb220d, type: 2}
       inverted: 0
   - targetState: {fileID: 11400000, guid: 2998dd6b6e827f6438bdeb08795eb87f, type: 2}
     conditions:

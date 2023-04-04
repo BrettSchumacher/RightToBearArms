@@ -79,6 +79,7 @@ public class GrappleHookManager : MonoBehaviour
 
         if (retracting)
         {
+            Debug.Log("RetrACt");
             RetractLeadRope(retractSpeed * Time.unscaledDeltaTime);
             if (!retracting)
             {
@@ -545,6 +546,7 @@ public class GrappleHookManager : MonoBehaviour
             return;
         }
 
+        instance.deploying = false;
         instance.retracting = true;
 
         AnchorPoint headAnchor = new AnchorPoint();
@@ -590,6 +592,11 @@ public class GrappleHookManager : MonoBehaviour
         }
 
         return instance.ropePoints[instance.ropePoints.Count - 1];
+    }
+
+    public static void StopDeploy()
+    {
+        instance.deploying = false;
     }
 }
 

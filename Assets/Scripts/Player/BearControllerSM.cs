@@ -18,7 +18,9 @@ public class BearControllerSM : MonoBehaviour
     public float wallRaycastDist = 0.05f;
     public LayerMask obstacleMask;
     public Collider2D headCollider;
+    public Collider2D wallJumpCollider;
     public DistanceJoint2D swingJoint;
+    public SpriteRenderer sprite;
 
     public UnityAction<StateType> OnStateEnter;
 
@@ -31,6 +33,7 @@ public class BearControllerSM : MonoBehaviour
     bool coyoteTime;
     bool spriteFlipped;
     Vector2 velocity;
+    float startingXScale;
 
     [HideInInspector] public bool grounded = true;
     [HideInInspector] public bool rightWall = false;
@@ -42,6 +45,7 @@ public class BearControllerSM : MonoBehaviour
     [HideInInspector] public bool grappleHeld;
     [HideInInspector] public bool grappleInput;
     [HideInInspector] public bool grappling = false;
+    [HideInInspector] public bool grappleSuccess = false;
 
     [HideInInspector] public GameObject rightWallObj;
     [HideInInspector] public GameObject leftWallObj;
@@ -82,6 +86,7 @@ public class BearControllerSM : MonoBehaviour
 
         numJumps = movementData.startingAirJumps;
         numAvailableJumps = numJumps;
+        startingXScale = sprite.transform.localScale.x;
     }
 
     // Update is called once per frame
@@ -89,6 +94,7 @@ public class BearControllerSM : MonoBehaviour
     {
         UpdateContacts();
 
+        GrappleHookManager.instance.GrappleUpdate(Time.deltaTime);
         currentState.OnStateUpdate(Time.deltaTime);
 
         if (currentState.CanTransition())
@@ -107,7 +113,7 @@ public class BearControllerSM : MonoBehaviour
             spriteFlipped = false;
         }
 
-        transform.localScale = new Vector3(transform.localScale.x, transform.localScale.y, spriteFlipped ? -1f : 1f);
+        sprite.transform.localScale = new Vector3((spriteFlipped ? -1f : 1f) * startingXScale, sprite.transform.localScale.y, sprite.transform.localScale.z);
     }
 
     private void FixedUpdate()
@@ -281,6 +287,20 @@ public class BearControllerSM : MonoBehaviour
             StopCoroutine(resetGrapple);
             resetGrapple = null;
         }
+    }
+
+    public void ResetController(Vector2 respawnPoint)
+    {
+        currentState.OnStateExit(availableStates[0].stateType);
+        currentState = availableStates[0].GetStateInstance(this);
+        currentState.OnStateEnter();
+
+        rb.velocity = Vector2.zero;
+        velocity = Vector2.zero;
+
+        GrappleHookManager.instance.ClearRope();
+
+        transform.position = respawnPoint;
     }
 
     public void OnMove(InputAction.CallbackContext obj)

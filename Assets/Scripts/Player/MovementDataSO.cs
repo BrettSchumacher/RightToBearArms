@@ -16,6 +16,7 @@ public class MovementDataSO : ScriptableObject
     public int startingAirJumps = 0;
     public float jumpSpeed = 7f;
     public float maxBoostLength = 0.17f;
+    public float jumpReleaseSpeed = 2f;
     public float decelTime = 0.12f;
     public float strafeSpeed = 7f;
     public float timeToMaxStrafeFromRest = 0.12f;
@@ -61,6 +62,8 @@ public class MovementDataSO : ScriptableObject
     public float grappleUpGravity = 1f;
     public float grappleDownGravity = 2f;
     public float grappleManualRetractSpeed = 1f;
+    public float releaseSnapAngle = 15f;
+    public float releaseSpeedBoost = 5f;
     public LayerMask grappleInteractMask;
     public LayerMask grappleBlockMask;
     public GameObject grappleHeadPrefab;
