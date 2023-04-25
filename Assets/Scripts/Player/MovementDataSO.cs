@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Character/MovementData")]
+[CreateAssetMenu(menuName = "Data/MovementData")]
 public class MovementDataSO : ScriptableObject
 {
     [Header("Walk Values")]
@@ -44,6 +44,7 @@ public class MovementDataSO : ScriptableObject
     public float timeToMaxClimbFromRest = 0.05f;
     public float timeToRestFromMaxClimb = 0.05f;
     public float climbAroundBoost = 5f;
+    public LayerMask climbableMask;
 
     [Header("Grapple Values")]
     public float grappleRange = 10f;
@@ -62,12 +63,15 @@ public class MovementDataSO : ScriptableObject
     public float grappleUpGravity = 1f;
     public float grappleDownGravity = 2f;
     public float grappleManualRetractSpeed = 1f;
+    public float grappleManualRetruactDuration = 0.2f;
     public float releaseSnapAngle = 15f;
     public float releaseSpeedBoost = 5f;
     public LayerMask grappleInteractMask;
     public LayerMask grappleBlockMask;
     public GameObject grappleHeadPrefab;
     public GameObject ropeSegmentPrefab;
+    public float grappleMaxMoveDelta = 0.25f;
+    public float minSegLength = 0.05f;
 
     [Header("Misc")]
     public float spriteFlipThreshold = 0.02f;

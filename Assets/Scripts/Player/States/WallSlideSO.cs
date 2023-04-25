@@ -22,6 +22,8 @@ public class WallSlideSO : IStateSO
             wallSlide.timeToMaxFromRest = data.timeToMaxSlideFromRest;
             wallSlide.timeToBoostFromMax = data.timeToBoostFromMaxSlide;
             wallSlide.timeToMaxFromBoost = data.timeToMaxSlideFromBoost;
+
+            ClearStates += ClearState;
         }
 
         return instance;

@@ -25,6 +25,8 @@ public class OneWayPlatform : MonoBehaviour
         bear = BearControllerSM.instance;
         platform = GetComponent<BoxCollider2D>();
 
+        prevBearPoint = bear.transform.position;
+
         boxPoint = platform.bounds.center;
         boxSize = platform.bounds.size;
         boxAngle = 0f;

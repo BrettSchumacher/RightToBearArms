@@ -12,6 +12,7 @@ public class BearControllerSM : MonoBehaviour
 
     public MovementDataSO movementData;
     public List<IStateSO> startingStates;
+    public IStateSO upTransitionState;
     public float jumpBufferTime = 0.1f;
     public float coyoteTimeLength = 0.1f;
     public float groundRaycastDist = 0.01f;
@@ -34,6 +35,7 @@ public class BearControllerSM : MonoBehaviour
     bool spriteFlipped;
     Vector2 velocity;
     float startingXScale;
+    bool paused;
 
     [HideInInspector] public bool grounded = true;
     [HideInInspector] public bool rightWall = false;
@@ -46,6 +48,8 @@ public class BearControllerSM : MonoBehaviour
     [HideInInspector] public bool grappleInput;
     [HideInInspector] public bool grappling = false;
     [HideInInspector] public bool grappleSuccess = false;
+    [HideInInspector] public float grappleExtend = 0f;
+    [HideInInspector] public float grappleShorten = 0f;
 
     [HideInInspector] public GameObject rightWallObj;
     [HideInInspector] public GameObject leftWallObj;
@@ -70,12 +74,17 @@ public class BearControllerSM : MonoBehaviour
     private void OnDestroy()
     {
         instance = null;
+
+        GameManager.OnGameFreeze -= OnGameFreeze;
+        GameManager.OnGameUnfreeze -= OnGameUnfreeze;
+
+        IStateSO.ClearStates?.Invoke();
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        rb = GetComponent<Rigidbody2D>();
+        rb = gameObject.GetComponent<Rigidbody2D>();
 
         availableStates = new List<IStateSO>(startingStates);
         currentState = availableStates[0].GetStateInstance(this);
@@ -87,11 +96,23 @@ public class BearControllerSM : MonoBehaviour
         numJumps = movementData.startingAirJumps;
         numAvailableJumps = numJumps;
         startingXScale = sprite.transform.localScale.x;
+
+        GameManager.OnGameFreeze += OnGameFreeze;
+        GameManager.OnGameUnfreeze += OnGameUnfreeze;
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (paused)
+        {
+            return;
+        }
+
+        // Debug.Log("--------------------------------");
+        int frame = Time.frameCount;
+
+        // Debug.Log("Bear update start: " + frame);
         UpdateContacts();
 
         GrappleHookManager.instance.GrappleUpdate(Time.deltaTime);
@@ -114,10 +135,17 @@ public class BearControllerSM : MonoBehaviour
         }
 
         sprite.transform.localScale = new Vector3((spriteFlipped ? -1f : 1f) * startingXScale, sprite.transform.localScale.y, sprite.transform.localScale.z);
+
+        // Debug.Log("Bear update end: " + frame);
     }
 
     private void FixedUpdate()
     {
+        if (paused)
+        {
+            return;
+        }
+
         currentState.OnStateFixedUpdate(Time.fixedDeltaTime);
     }
 
@@ -194,19 +222,36 @@ public class BearControllerSM : MonoBehaviour
 
             if (transitionTriggered)
             {
-                TransitionStates(transition.targetState.GetStateInstance(this));
+                TransitionStates(transition.targetState);
                 break;
             }
         }
     }
 
-    void TransitionStates(IState newState)
+    void TransitionStates(IStateSO newStateSO)
     {
+        IState newState = newStateSO.GetStateInstance(this);
+
         currentState.OnStateExit(newState.stateType);
         currentState = newState;
         currentState.OnStateEnter();
         currentTransitions = newState.GetTransitions();
         OnStateEnter?.Invoke(currentState.stateType);
+
+        if (newStateSO.resetJumps)
+        {
+            RefreshJumps();
+        }
+    }
+
+    void OnGameFreeze()
+    {
+        paused = true;
+    }
+
+    void OnGameUnfreeze()
+    {
+        paused = false;
     }
 
     public Vector2 GetVelocity()
@@ -229,6 +274,12 @@ public class BearControllerSM : MonoBehaviour
         velocity = newVel;
     }
 
+    public void SetRBVelocity(Vector2 newVel)
+    {
+        velocity = newVel;
+        rb.velocity = newVel;
+    }
+
     public void SetPosition(Vector2 pos)
     {
         rb.MovePosition(pos);
@@ -239,6 +290,14 @@ public class BearControllerSM : MonoBehaviour
         if (!availableStates.Contains(newState))
         {
             availableStates.Add(newState);
+        }
+    }
+
+    public void AddMovementStates(List<IStateSO> states)
+    {
+        foreach (IStateSO state in states)
+        {
+            AddMovementState(state);
         }
     }
 
@@ -289,11 +348,14 @@ public class BearControllerSM : MonoBehaviour
         }
     }
 
+    public void UpTransition()
+    {
+        TransitionStates(upTransitionState);
+    }
+
     public void ResetController(Vector2 respawnPoint)
     {
-        currentState.OnStateExit(availableStates[0].stateType);
-        currentState = availableStates[0].GetStateInstance(this);
-        currentState.OnStateEnter();
+        TransitionStates(availableStates[0]);
 
         rb.velocity = Vector2.zero;
         velocity = Vector2.zero;
@@ -342,6 +404,27 @@ public class BearControllerSM : MonoBehaviour
                 StopCoroutine(resetGrapple);
             }
             resetGrapple = StartCoroutine(ResetGrapple());
+        }
+    }
+
+    public void OnRopeShorten(InputAction.CallbackContext obj)
+    {
+        float val = obj.ReadValue<Vector2>().y;
+
+        print("VAL: " + val);
+
+        if (Mathf.Abs(val) < movementData.inputDeadzone) return;
+
+        grappleShorten = 0f;
+        grappleExtend = 0f;
+
+        if (val > 0f)
+        {
+            grappleShorten = Time.time + movementData.grappleManualRetruactDuration;
+        }
+        else
+        {
+            grappleExtend = Time.time + movementData.grappleManualRetruactDuration;
         }
     }
 

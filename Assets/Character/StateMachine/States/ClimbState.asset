@@ -13,7 +13,12 @@ MonoBehaviour:
   m_Name: ClimbState
   m_EditorClassIdentifier: 
   stateType: 2
+  resetJumps: 0
   transitions:
+  - targetState: {fileID: 11400000, guid: 5f569a3b071970d4e982335f7494c6e0, type: 2}
+    conditions:
+    - condition: {fileID: 11400000, guid: c5d718c568214184db0bbbdcf57e22ac, type: 2}
+      inverted: 0
   - targetState: {fileID: 11400000, guid: 2ae1439b4655121409d726a5df641232, type: 2}
     conditions:
     - condition: {fileID: 11400000, guid: 3a33910a2958c5c4c8c96995e0cb220d, type: 2}

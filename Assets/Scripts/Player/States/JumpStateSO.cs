@@ -8,6 +8,7 @@ public class JumpStateSO : IStateSO
     JumpState jump;
 
     public bool decrementJumps = true;
+    public bool variableHeight = true;
 
     public override IState GetStateInstance(BearControllerSM brain)
     {
@@ -25,6 +26,9 @@ public class JumpStateSO : IStateSO
             jump.decelTime = data.decelTime;
             jump.strafeSpeed = data.strafeSpeed;
             jump.decrementJumps = decrementJumps;
+            jump.variableHeight = variableHeight;
+
+            ClearStates += ClearState;
         }
 
         return instance;
@@ -40,6 +44,7 @@ public class JumpState : IState
     public float strafeSpeed;
     public float cooldown;
     public bool decrementJumps;
+    public bool variableHeight;
 
     float initialStrafeSpeed;
     float decel;
@@ -75,7 +80,7 @@ public class JumpState : IState
         Vector2 vel = brain.GetVelocity();
 
         bool wasHoldingJump = holdingJump;
-        holdingJump = holdingJump && brain.jumpHeld;
+        holdingJump = holdingJump && (brain.jumpHeld || !variableHeight);
 
         if (holdingJump && Time.time < boostExpire)
         {

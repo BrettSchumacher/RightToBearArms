@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: GrappleRetract
   m_EditorClassIdentifier: 
   stateType: 9
+  resetJumps: 1
   transitions:
   - targetState: {fileID: 11400000, guid: 5f569a3b071970d4e982335f7494c6e0, type: 2}
     conditions:

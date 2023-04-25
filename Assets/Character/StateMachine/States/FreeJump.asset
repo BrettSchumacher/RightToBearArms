@@ -13,7 +13,12 @@ MonoBehaviour:
   m_Name: FreeJump
   m_EditorClassIdentifier: 
   stateType: 3
+  resetJumps: 0
   transitions:
+  - targetState: {fileID: 11400000, guid: 5f569a3b071970d4e982335f7494c6e0, type: 2}
+    conditions:
+    - condition: {fileID: 11400000, guid: c5d718c568214184db0bbbdcf57e22ac, type: 2}
+      inverted: 0
   - targetState: {fileID: 11400000}
     conditions:
     - condition: {fileID: 11400000, guid: 3a33910a2958c5c4c8c96995e0cb220d, type: 2}
@@ -39,3 +44,4 @@ MonoBehaviour:
     - condition: {fileID: 11400000, guid: dde32fbfc730b3043a3da2375d0badf5, type: 2}
       inverted: 1
   decrementJumps: 0
+  variableHeight: 1

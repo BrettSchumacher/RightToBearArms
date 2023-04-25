@@ -23,6 +23,8 @@ public class ClimbStateSO : IStateSO
             climb.inputDeadzone = data.inputDeadzone;
             climb.turnBounciness = data.turnBounciness;
             climb.climbAroundBoost = data.climbAroundBoost;
+
+            ClearStates += ClearState;
         }
 
         return instance;

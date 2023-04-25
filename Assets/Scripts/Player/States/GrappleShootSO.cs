@@ -32,6 +32,8 @@ public class GrappleShootSO : IStateSO
             grappleShoot.fallAccelTime = data.timeToMaxFallFromRest;
             grappleShoot.jumpSpeed = data.jumpSpeed;
             grappleShoot.jumpDecelTime = data.decelTime;
+
+            ClearStates += ClearState;
         }
 
         return instance;
@@ -62,6 +64,8 @@ public class GrappleShoot : IState
     float endTimer;
 
     bool grappleHit;
+    bool paused = false;
+    float pauseStartTime;
 
     public GrappleShoot(BearControllerSM brain, List<Transition> transitions) : base(brain, transitions)
     {
@@ -71,7 +75,6 @@ public class GrappleShoot : IState
     public override void OnStateEnter()
     {
         base.OnStateEnter();
-        Debug.Log("SHOOT");
         brain.grappleSuccess = false;
 
         brain.UseGrapple();
@@ -79,6 +82,16 @@ public class GrappleShoot : IState
 
         initialTimeScale = Time.timeScale;
         Time.timeScale = grappleShotTimescale;
+
+        ContactFilter2D filter = new ContactFilter2D();
+        filter.SetLayerMask(brain.movementData.grappleInteractMask);
+        List<Collider2D> res = new List<Collider2D>();
+
+        if (Physics2D.OverlapCollider(GrappleHookManager.instance.grappleClearZone, filter, res) > 0)
+        {
+            endTimer = Time.unscaledTime - 0.1f;
+            return;
+        }
 
         jumpDecel = -jumpSpeed / jumpDecelTime;
         fallAccel = fallSpeed / fallAccelTime;
@@ -89,6 +102,21 @@ public class GrappleShoot : IState
         GrappleHookManager.DeployGrappleHook(goal);
         GrappleHookManager.OnGrappleFailure += OnFailure;
         GrappleHookManager.OnGrappleSuccess += OnSuccess;
+
+        GameManager.OnGameFreeze += OnGameFreeze;
+        GameManager.OnGameUnfreeze += OnGameUnfreeze;
+    }
+
+    void OnGameFreeze()
+    {
+        paused = true;
+        pauseStartTime = Time.unscaledTime;
+    }
+
+    void OnGameUnfreeze()
+    {
+        paused = false;
+        endTimer += Time.unscaledTime - pauseStartTime;
     }
 
     Vector2 GetGrapplePoint(Vector2 start)
@@ -151,11 +179,19 @@ public class GrappleShoot : IState
 
         GrappleHookManager.OnGrappleFailure -= OnFailure;
         GrappleHookManager.OnGrappleSuccess -= OnSuccess;
+
+        GameManager.OnGameFreeze -= OnGameFreeze;
+        GameManager.OnGameUnfreeze -= OnGameUnfreeze;
     }
 
     public override void OnStateUpdate(float dt)
     {
         base.OnStateUpdate(dt);
+
+        if (paused)
+        {
+            return;
+        }
 
         if (GrappleHookManager.GetRopeLength() > grappleRange)
         {
@@ -192,7 +228,7 @@ public class GrappleShoot : IState
 
     public override bool CanTransition()
     {
-        return grappleHit || Time.unscaledTime > endTimer;
+        return !paused && (grappleHit || Time.unscaledTime > endTimer);
     }
 }
 

@@ -19,6 +19,8 @@ public class IdleStateSO : IStateSO
             idle.stateType = stateType;
             idle.timeTorestFromMaxWalk = data.timeToRestFromMaxWalk;
             idle.walkSpeed = data.walkSpeed;
+
+            ClearStates += ClearState;
         }
 
         return instance;

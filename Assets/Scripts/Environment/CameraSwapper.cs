@@ -11,6 +11,8 @@ public class CameraSwapper : MonoBehaviour
     public static List<CameraSwapper> cameraStack = new List<CameraSwapper>();
     public static CameraSwapper activeZone;
     public static UnityAction<CameraSwapper> SetPriority;
+    
+    static Vector2 transitionDirection;
 
     CinemachineVirtualCamera vcam;
     Collider2D camBounds;
@@ -47,8 +49,24 @@ public class CameraSwapper : MonoBehaviour
 
     void SetCamPriority(CameraSwapper swap)
     {
+        bool hadPriority = hasPriority;
         hasPriority = swap == this;
         vcam.Priority = (hasPriority) ? 1 : 0;
+
+        if (hasPriority && !hadPriority)
+        {
+            StartCoroutine(PauseForSec(GameManager.data.screenTransitionTime));
+            if (GameManager.data.clearGrappleOnTransition)
+            {
+                GrappleHookManager.ResetRope();
+            }
+
+            if (transitionDirection.y > 0.5f)
+            {
+                print("UP");
+                BearControllerSM.instance.UpTransition();
+            }
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -56,6 +74,16 @@ public class CameraSwapper : MonoBehaviour
         if (other != player)
         {
             return;
+        }
+
+        Vector2 playerPos = player.transform.position;
+        Vector2 surfacePoint = camBounds.ClosestPoint(playerPos);
+        bool insideCam = camBounds.OverlapPoint(playerPos);
+
+        transitionDirection = (surfacePoint - playerPos).normalized;
+        if (insideCam)
+        {
+            transitionDirection *= -1f;
         }
 
         // player touching the zone
@@ -86,8 +114,17 @@ public class CameraSwapper : MonoBehaviour
                 return;
             }
 
+            transitionDirection *= -1f;
+
             CameraSwapper newCam = cameraStack[0];
             SetPriority?.Invoke(newCam);
         }
+    }
+
+    IEnumerator PauseForSec(float seconds)
+    {
+        GameManager.FreezeGame();
+        yield return new WaitForSecondsRealtime(seconds);
+        GameManager.UnfreezeGame();
     }
 }

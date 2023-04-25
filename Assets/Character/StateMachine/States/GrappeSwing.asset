@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: GrappeSwing
   m_EditorClassIdentifier: 
   stateType: 8
+  resetJumps: 0
   transitions:
   - targetState: {fileID: 11400000, guid: e65b740e9402e1f47b797f16a5194927, type: 2}
     conditions:
-    - condition: {fileID: 11400000, guid: 1d919d60df0d8f743beacac46667cfed, type: 2}
-      inverted: 1
+    - condition: {fileID: 11400000, guid: c5d718c568214184db0bbbdcf57e22ac, type: 2}
+      inverted: 0

@@ -25,6 +25,8 @@ public class FallStateSO : IStateSO
             fall.turnBounciness = data.turnBounciness;
             fall.timeToMaxStrafeFromRest = data.timeToMaxStrafeFromRest;
             fall.timeToRestFromMaxStrafe = data.timeToRestFromMaxStrafe;
+
+            ClearStates += ClearState;
         }
 
         return instance;
@@ -68,11 +70,19 @@ public class FallState : IState
         strafeDecel = strafeSpeed / timeToRestFromMaxStrafe;
 
         initialStrafeSpeed = Mathf.Max(strafeSpeed, Mathf.Abs(brain.GetVelocity().x));
+
+    }
+
+    public override void OnStateExit(StateType nextState)
+    {
+        base.OnStateExit(nextState);
+
     }
 
     public override void OnStateUpdate(float dt)
     {
         base.OnStateUpdate(dt);
+
 
         Vector2 inputs = brain.moveInput;
         Vector2 vel = brain.GetVelocity();

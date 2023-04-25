@@ -21,6 +21,8 @@ public class WallJumpSO : IStateSO
             jump.maxBoostLength = data.wallJumpBoostLength;
             jump.decelTime = data.decelTime;
             jump.strafeSpeed = data.strafeSpeed;
+
+            ClearStates += ClearState;
         }
 
         return instance;

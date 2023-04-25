@@ -22,6 +22,8 @@ public class WalkStateSO : IStateSO
             walk.timeToRestFromMax = data.timeToRestFromMaxWalk;
             walk.inputDeadzone = data.inputDeadzone;
             walk.turnBounciness = data.turnBounciness;
+
+            ClearStates += ClearState;
         }
 
         return instance;

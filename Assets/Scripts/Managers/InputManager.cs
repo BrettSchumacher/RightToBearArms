@@ -35,6 +35,11 @@ public class InputManager : MonoBehaviour
         input.SwitchCurrentActionMap(InputSchemeToName(currentScheme));
     }
 
+    private void OnDestroy()
+    {
+        instance = null;
+    }
+
     public void ChangeInputSchemeHelper(InputScheme newScheme)
     {
         currentScheme = newScheme;
@@ -58,6 +63,19 @@ public class InputManager : MonoBehaviour
         ChangeInputSchemeHelper(schemeStack.Pop());
     }
 
+    public void ResetInputScheme(InputScheme newScheme)
+    {
+        schemeStack.Clear();
+        currentScheme = newScheme;
+
+        input.SwitchCurrentActionMap(InputSchemeToName(currentScheme));
+    }
+
+    public static void ClearSchemeStack(InputScheme newScheme = InputScheme.INGAME)
+    {
+        instance?.ResetInputScheme(newScheme);
+    }
+
     public void ControlsChanged()
     {
         if (input.currentControlScheme == "Controller")
@@ -79,8 +97,10 @@ public class InputManager : MonoBehaviour
                 return "Dialogue";
             case InputScheme.MENU:
                 return "Menu";
-            default:
+            case InputScheme.INGAME:
                 return "InGame";
+            default:
+                return "Disabled";
         }
     }
 
@@ -103,6 +123,11 @@ public class InputManager : MonoBehaviour
     {
         return instance.currentControls;
     }
+
+    public static InputScheme GetCurrentInputScheme()
+    {
+        return instance.currentScheme;
+    }
 }
 
 public enum InputScheme
@@ -110,6 +135,7 @@ public enum InputScheme
     INGAME,
     MENU,
     DIALOGUE,
+    DISABLED,
 }
 
 public enum ControlScheme

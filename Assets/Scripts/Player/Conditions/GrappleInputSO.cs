@@ -7,6 +7,6 @@ public class GrappleInputSO : IConditionSO
 {
     public override bool IsConditionMet()
     {
-        return brain.grappleInput && !GrappleHookManager.GrappleInUse();
+        return brain.grappleInput; // && !GrappleHookManager.GrappleInUse();
     }
 }

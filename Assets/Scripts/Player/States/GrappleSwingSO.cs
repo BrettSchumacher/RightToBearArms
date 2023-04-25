@@ -38,6 +38,12 @@ public class GrappleSwingSO : IStateSO
             grappleSwing.grappleRetractSpeed = data.grappleManualRetractSpeed;
             grappleSwing.snapReleaseAngle = data.releaseSnapAngle;
             grappleSwing.releaseSpeedBoost = data.releaseSpeedBoost;
+            grappleSwing.climbableMask = data.climbableMask;
+            grappleSwing.timeToMaxClimbFromRest = data.timeToMaxClimbFromRest;
+            grappleSwing.timeToRestFromMaxClimb = data.timeToRestFromMaxClimb;
+            grappleSwing.climbSpeed = data.climbSpeed;
+
+            ClearStates += ClearState;
         }
 
         return instance;
@@ -69,6 +75,10 @@ public class GrappleSwing : IState
     public float grappleRetractSpeed;
     public float snapReleaseAngle;
     public float releaseSpeedBoost;
+    public float climbSpeed;
+    public float timeToMaxClimbFromRest;
+    public float timeToRestFromMaxClimb;
+    public LayerMask climbableMask;
 
     float walkAccel;
     float walkDecel;
@@ -76,6 +86,8 @@ public class GrappleSwing : IState
     float jumpDecel;
     float strafeAccel;
     float strafeDecel;
+    float climbAccel;
+    float climbDecel;
 
     float ropeLength;
     Vector2 prevPosition;
@@ -90,8 +102,6 @@ public class GrappleSwing : IState
     {
         base.OnStateEnter();
 
-        Debug.Log("SWING");
-
         prevPosition = brain.transform.position;
         prevTime = Time.time;
 
@@ -101,6 +111,8 @@ public class GrappleSwing : IState
         jumpDecel = jumpSpeed / timeToJumpRest;
         strafeAccel = strafeSpeed / timeToMaxStrafe;
         strafeDecel = strafeSpeed / timeToRestStrafe;
+        climbAccel = climbSpeed / timeToMaxClimbFromRest;
+        climbDecel = climbSpeed / timeToRestFromMaxClimb;
 
         ropeLength = grappleLengthRachetAmt * Mathf.Ceil(GrappleHookManager.GetRopeLength() / grappleLengthRachetAmt);
         rachetShorten = ropeLength - GrappleHookManager.GetRopeLength();
@@ -116,6 +128,7 @@ public class GrappleSwing : IState
         base.OnStateExit(nextState);
         brain.swingJoint.enabled = false;
         brain.GetComponent<Rigidbody2D>().gravityScale = 0f;
+        brain.UseGrapple();
 
         Vector2 vel = brain.GetVelocity();
         Vector2 inputs = brain.moveInput;
@@ -123,15 +136,15 @@ public class GrappleSwing : IState
         angle = snapReleaseAngle * Mathf.Round(angle / snapReleaseAngle);
         Vector2 newVel = new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sign(angle * Mathf.Deg2Rad));
 
-        if (inputs.magnitude > 0.01f)
-        {
-            newVel *= vel.magnitude;
-            newVel += inputs * releaseSpeedBoost;
-        }
-        else
-        {
+        // if (inputs.magnitude > 0.01f)
+        // {
+        //     newVel *= vel.magnitude;
+        //     newVel += inputs * releaseSpeedBoost;
+        // }
+        // else
+        // {
             newVel *= vel.magnitude + releaseSpeedBoost;
-        }
+        // }
 
         brain.SetVelocity(newVel);
     }
@@ -139,6 +152,9 @@ public class GrappleSwing : IState
     public override void OnStateUpdate(float dt)
     {
         base.OnStateUpdate(dt);
+
+        int frame = Time.frameCount;
+        // Debug.Log("Starting swing update: " + frame);
 
         Vector2 pivot = GrappleHookManager.GetBearRopePivot();
         Vector2 origin = GrappleHookManager.instance.grappleOrigin.position;
@@ -151,17 +167,43 @@ public class GrappleSwing : IState
             rachetShorten = 0f;
         }
 
-        Debug.Log("Rope length: " + ropeLength);
-
         float segLength = GrappleHookManager.GetBearSegmentLength();
         float idealSegLength = ropeLength - (GrappleHookManager.GetRopeLength() - segLength) - rachetShorten;
 
-        Debug.Log("Segment: " + segLength + ", ideal: " + idealSegLength);
+        if (idealSegLength < segLength - 0.5f)
+        {
+            idealSegLength = segLength - 0.5f;
+            rachetShorten = ropeLength - (GrappleHookManager.GetRopeLength() - segLength) - idealSegLength;
+        }
 
         Vector2 rope = origin - pivot;
         Vector2 vel = brain.GetVelocity();
 
-        if (brain.grounded)
+        bool climbing = OnClimbable();
+        bool tautRope = actualRopeLength > (ropeLength + 0.1f);
+
+        if (climbing)
+        {
+            brain.GetComponent<Rigidbody2D>().gravityScale = 0f;
+        }
+        else
+        {
+            brain.GetComponent<Rigidbody2D>().gravityScale = grappleDownGravity;
+        }
+
+        if (!tautRope && climbing)
+        {
+            vel.y = ClimbUpdate(dt, vel.y);
+            if (Mathf.Abs(brain.moveInput.x) > inputDeadzone)
+            {
+                vel.x = WalkUpdate(dt);
+            }
+            else
+            {
+                vel.x = 0f;
+            }
+        }
+        else if (brain.grounded)
         {
             vel.x = WalkUpdate(dt);
         }
@@ -172,18 +214,18 @@ public class GrappleSwing : IState
         }
 
 
-        if (brain.moveInput.y > inputDeadzone)
+        if (Time.time < brain.grappleShorten)
         {
-            float retractAmt = brain.moveInput.y * grappleRetractSpeed * dt;
+            float retractAmt = grappleRetractSpeed * dt;
             if (idealSegLength > retractAmt)
             {
                 rachetShorten += retractAmt;
                 idealSegLength -= retractAmt;
             }
         }
-        else if (brain.moveInput.y < -inputDeadzone)
+        else if (Time.time < brain.grappleExtend)
         {
-            float releaseAmt = -brain.moveInput.y * grappleRetractSpeed * dt;
+            float releaseAmt = grappleRetractSpeed * dt;
             if (releaseAmt > rachetShorten)
             {
                 releaseAmt = rachetShorten;
@@ -195,6 +237,25 @@ public class GrappleSwing : IState
         brain.swingJoint.distance = idealSegLength;
         brain.swingJoint.connectedAnchor = pivot;
         brain.SetVelocity(vel);
+
+        // Debug.Log("Done swing update: " + frame);
+    }
+
+    bool OnClimbable()
+    {
+        bool met = false;
+
+        if (brain.rightWallObj != null)
+        {
+            met |= (((1 << brain.rightWallObj.layer) & climbableMask.value) != 0);
+        }
+
+        if (brain.leftWallObj != null)
+        {
+            met |= (((1 << brain.leftWallObj.layer) & climbableMask.value) != 0);
+        }
+
+        return met;
     }
 
     Vector2 ClampVel(float radius, Vector2 vel)
@@ -204,6 +265,45 @@ public class GrappleSwing : IState
         if (angularVel > maxAngularVel)
         {
             return vel.normalized * maxAngularVel * radius;
+        }
+
+        return vel;
+    }
+
+    float ClimbUpdate(float dt, float yVel)
+    {
+        // get variables from brain
+        float input = brain.moveInput.y;
+        float vel = yVel;
+
+        // clamp input with deadzone
+        if (Mathf.Abs(input) < inputDeadzone)
+        {
+            input = 0f;
+        }
+
+        // allow snappy turns by checking if player reversed the input direction
+        if ((input < 0f && vel > 0f) || (input > 0f && vel < 0f))
+        {
+            vel *= -turnBounciness;
+        }
+
+        float goalVel = input * climbSpeed;
+        float diffSign = Mathf.Sign(goalVel - vel);
+
+        if (Mathf.Approximately(vel, goalVel))
+        {
+            vel = goalVel;
+        }
+        else if (Mathf.Abs(vel) < Mathf.Abs(goalVel))
+        {
+            vel += diffSign * climbAccel * dt;
+            vel = (Mathf.Sign(goalVel - vel) != diffSign) ? goalVel : vel;
+        }
+        else
+        {
+            vel += diffSign * climbDecel * dt;
+            vel = (Mathf.Sign(goalVel - vel) != diffSign) ? goalVel : vel;
         }
 
         return vel;
@@ -221,10 +321,10 @@ public class GrappleSwing : IState
         }
 
         // allow snappy turns by checking if player reversed the input direction
-        if ((input < 0f && vel > 0f) || (input > 0f && vel < 0f))
-        {
-            vel *= -turnBounciness;
-        }
+        // if ((input < 0f && vel > 0f) || (input > 0f && vel < 0f))
+        // {
+        //     vel *= -turnBounciness;
+        // }
 
         float goalVel = input * walkSpeed;
         float diffSign = Mathf.Sign(goalVel - vel);
@@ -255,6 +355,10 @@ public class GrappleSwing : IState
     Vector2 AirUpdate(float dt)
     {
         Vector2 vel = brain.GetVelocity();
+        Vector2 radius = (Vector2)GrappleHookManager.instance.grappleOrigin.position - GrappleHookManager.GetBearRopePivot();
+
+        bool swingingRight = Vector3.Cross(vel, radius).z < 0f;
+
         Vector2 inputs = brain.moveInput;
 
         if (Mathf.Abs(inputs.x) < inputDeadzone)
@@ -263,7 +367,7 @@ public class GrappleSwing : IState
             inputInUse = false;
         }
 
-        if (vel.x > 0) // swinging right
+        if (swingingRight) // swinging right
         {
             if (inputs.x > inputDeadzone) // holding right
             {
@@ -301,7 +405,7 @@ public class GrappleSwing : IState
                 }
             }
         }
-        else if (vel.x < 0) // swinging left
+        else if (!swingingRight) // swinging left
         {
             if (inputs.x < -inputDeadzone) // holding left
             {
@@ -347,11 +451,12 @@ public class GrappleSwing : IState
         }
 
         bool rightInput = inputs.x > 0f;
-        if (Mathf.Abs(inputs.x) > inputDeadzone && ((rightInput && vel.x > 0.01f) || (!rightInput && vel.x < -0.01f)))
+        float speed = vel.magnitude;
+        if (Mathf.Abs(inputs.x) > inputDeadzone && ((rightInput && swingingRight) || (!rightInput && !swingingRight)))
         {
-            vel.x += Mathf.Max(minSwingBoost, Mathf.Abs(vel.x)) * inputs.x * xSwingInfluence * dt;
+            speed += Mathf.Max(minSwingBoost, speed) * Mathf.Abs(inputs.x) * xSwingInfluence * dt;
         }
 
-        return vel;
+        return vel.normalized * speed;
     }
 }

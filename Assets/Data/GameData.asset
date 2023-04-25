@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49380e7dd41446d4f96e707f77a38c09, type: 3}
+  m_Name: GameData
+  m_EditorClassIdentifier: 
+  screenTransitionTime: 1
+  clearGrappleOnTransition: 1
+  upTransitionSpeed: 1000
+  pauseSceneName: Pause Menu
+  pauseCooldown: 0.5
+  pauseAnimLength: 0.9
+  respawnTime: 1.2
+  mainMenuSceneName: Main Menu

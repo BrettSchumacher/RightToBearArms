@@ -20,6 +20,8 @@ public class GrappleRetractSO : IStateSO
             grappleRetract.fallAccelTime = data.timeToMaxFallFromRest;
             grappleRetract.jumpSpeed = data.jumpSpeed;
             grappleRetract.jumpDecelTime = data.decelTime;
+
+            ClearStates += ClearState;
         }
 
         return instance;
@@ -47,8 +49,6 @@ public class GrappleRetract : IState
     public override void OnStateEnter()
     {
         base.OnStateEnter();
-
-        Debug.Log("RETRACT");
 
         retracted = false;
 

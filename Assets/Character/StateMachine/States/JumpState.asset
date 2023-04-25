@@ -43,3 +43,4 @@ MonoBehaviour:
     - condition: {fileID: 11400000, guid: dde32fbfc730b3043a3da2375d0badf5, type: 2}
       inverted: 1
   decrementJumps: 1
+  variableHeight: 1
