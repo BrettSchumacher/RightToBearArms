@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 [RequireComponent(typeof(SpriteRenderer))]
 public class AbilityPickup : MonoBehaviour
@@ -8,6 +9,8 @@ public class AbilityPickup : MonoBehaviour
     public List<IStateSO> stateUnlocks;
     public ParticleSystem passiveEffect;
     public GameObject grabbedEffectPrefab;
+
+    public UnityEvent OnPickup;
 
     public float grabbedEffectLength = 1f;
 
@@ -32,6 +35,7 @@ public class AbilityPickup : MonoBehaviour
             activated = true;
             player.AddMovementStates(stateUnlocks);
             StartCoroutine(PlayGrabAnim());
+            OnPickup?.Invoke();
         }
     }
 

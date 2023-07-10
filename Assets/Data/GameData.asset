@@ -20,3 +20,6 @@ MonoBehaviour:
   pauseAnimLength: 0.9
   respawnTime: 1.2
   mainMenuSceneName: Main Menu
+  gameLevelName: Demo
+  textFadeInTime: 2
+  textFadeOutTime: 1

@@ -9,9 +9,13 @@ public enum StateType
     CLIMB,
     JUMP,
     FALL,
+    WALL_GRAB,
     WALL_SLIDE,
     WALL_JUMP,
     GRAPPLE_SHOOT,
     GRAPPLE_SWING,
     GRAPPLE_RELEASE,
+    GRAPPLE_WALK,
+    GRAPPLE_CLIMB,
+    GRAPPLE,
 }

@@ -56,6 +56,7 @@ public class CameraSwapper : MonoBehaviour
         if (hasPriority && !hadPriority)
         {
             StartCoroutine(PauseForSec(GameManager.data.screenTransitionTime));
+            BearControllerSM.instance?.RefreshJumps();
             if (GameManager.data.clearGrappleOnTransition)
             {
                 GrappleHookManager.ResetRope();

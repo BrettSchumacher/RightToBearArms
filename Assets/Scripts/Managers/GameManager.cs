@@ -24,6 +24,7 @@ public class GameManager : MonoBehaviour
     public int targetfps = 30;
     public GameDataSO gameData;
     public Image blackScreen;
+    public GameObject winScreen;
 
     bool killingPlayer = false;
     bool pauseOverride = false;
@@ -175,16 +176,27 @@ public class GameManager : MonoBehaviour
         instance?.ResetLevelHelper();
     }
 
+    public static void BeatGame()
+    {
+        instance?.BeatgameHelper();
+    }
+
     public void ResetLevelHelper()
     {
-        SceneManager.UnloadSceneAsync(data.pauseSceneName);
+        if (SceneManager.sceneCount > 1)
+        {
+            SceneManager.UnloadSceneAsync(data.pauseSceneName);
+        }
 
         StartCoroutine(ExitAnim(SceneManager.GetActiveScene().name));
     }
 
     public void QuitToMenu()
     {
-        SceneManager.UnloadSceneAsync(data.pauseSceneName);
+        if (SceneManager.sceneCount > 1)
+        {
+            SceneManager.UnloadSceneAsync(data.pauseSceneName);
+        }
 
         StartCoroutine(ExitAnim(data.mainMenuSceneName));
     }
@@ -193,6 +205,14 @@ public class GameManager : MonoBehaviour
     {
         Application.Quit();
         Debug.Break();
+    }
+
+    public void BeatgameHelper()
+    {
+        FreezeGame();
+        InputManager.ChangeInputScheme(InputScheme.MENU);
+
+        winScreen.SetActive(true);
     }
 
     IEnumerator ExitAnim(string sceneName)

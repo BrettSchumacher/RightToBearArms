@@ -44,6 +44,7 @@ public class ClimbState : IState
     float decel;
 
     bool leftClimb;
+    bool climbing = false;
 
     public ClimbState(BearControllerSM brain, List<Transition> transitions) : base(brain, transitions)
     {
@@ -60,6 +61,7 @@ public class ClimbState : IState
         decel = climbSpeed / timeToRestFromMax;
 
         leftClimb = brain.leftWall;
+        climbing = true;
     }
 
     public override void OnStateExit(StateType nextState)
@@ -108,6 +110,17 @@ public class ClimbState : IState
         {
             vel += diffSign * decel * dt;
             vel = (Mathf.Sign(goalVel - vel) != diffSign) ? goalVel : vel;
+        }
+
+        bool wasClimbing = climbing;
+        climbing = Mathf.Abs(vel) > 0.1f;
+        if (climbing && !wasClimbing)
+        {
+            brain.InvokeStateTypeUpdate(StateType.CLIMB);
+        }
+        else if (!climbing && wasClimbing)
+        {
+            brain.InvokeStateTypeUpdate(StateType.WALL_GRAB);
         }
 
         brain.SetYVelocity(vel);

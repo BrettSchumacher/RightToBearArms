@@ -24,6 +24,7 @@ public class BearControllerSM : MonoBehaviour
     public SpriteRenderer sprite;
 
     public UnityAction<StateType> OnStateEnter;
+    public UnityAction<StateType> OnStateTypeUpdate;
 
     List<IStateSO> availableStates;
     List<Transition> currentTransitions;
@@ -50,6 +51,7 @@ public class BearControllerSM : MonoBehaviour
     [HideInInspector] public bool grappleSuccess = false;
     [HideInInspector] public float grappleExtend = 0f;
     [HideInInspector] public float grappleShorten = 0f;
+    [HideInInspector] public bool invertSprite = false;
 
     [HideInInspector] public GameObject rightWallObj;
     [HideInInspector] public GameObject leftWallObj;
@@ -133,6 +135,8 @@ public class BearControllerSM : MonoBehaviour
         {
             spriteFlipped = false;
         }
+
+        sprite.flipX = invertSprite;
 
         sprite.transform.localScale = new Vector3((spriteFlipped ? -1f : 1f) * startingXScale, sprite.transform.localScale.y, sprite.transform.localScale.z);
 
@@ -363,6 +367,11 @@ public class BearControllerSM : MonoBehaviour
         GrappleHookManager.instance.ClearRope();
 
         transform.position = respawnPoint;
+    }
+
+    public void InvokeStateTypeUpdate(StateType newState)
+    {
+        OnStateTypeUpdate?.Invoke(newState);
     }
 
     public void OnMove(InputAction.CallbackContext obj)

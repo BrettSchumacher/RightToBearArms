@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba298b071923f7c4fb4d0329b572b8bf, type: 3}
   m_Name: WallJump
   m_EditorClassIdentifier: 
-  stateType: 6
-  resetJumps: 0
+  stateType: 7
+  resetJumps: 1
   transitions:
   - targetState: {fileID: 11400000, guid: 5f569a3b071970d4e982335f7494c6e0, type: 2}
     conditions:

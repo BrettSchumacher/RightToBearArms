@@ -32,4 +32,8 @@ public class GameDataSO : ScriptableObject
 
     [Header("Game Level Data")]
     public string gameLevelName = "Demo";
+
+    [Header("Tutorial Values")]
+    public float textFadeInTime = 1f;
+    public float textFadeOutTime = 0.5f;
 }

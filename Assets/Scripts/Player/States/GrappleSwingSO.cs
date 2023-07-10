@@ -94,6 +94,8 @@ public class GrappleSwing : IState
     float prevTime;
     float rachetShorten;
 
+    GrappleMoveType curMoveType = GrappleMoveType.SWING;
+
     public GrappleSwing(BearControllerSM brain, List<Transition> transitions) : base(brain, transitions)
     {
     }
@@ -121,30 +123,37 @@ public class GrappleSwing : IState
         brain.swingJoint.connectedAnchor = GrappleHookManager.GetBearRopePivot();
         brain.swingJoint.anchor = GrappleHookManager.instance.grappleOrigin.position - brain.transform.position;
         brain.GetComponent<Rigidbody2D>().gravityScale = grappleDownGravity;
+
+        curMoveType = GrappleMoveType.CLIMB;
     }
 
     public override void OnStateExit(StateType nextState)
     {
         base.OnStateExit(nextState);
+
         brain.swingJoint.enabled = false;
         brain.GetComponent<Rigidbody2D>().gravityScale = 0f;
         brain.UseGrapple();
 
         Vector2 vel = brain.GetVelocity();
+
+        Debug.DrawLine(brain.transform.position, brain.transform.position + (Vector3)vel, Color.red);
+
         Vector2 inputs = brain.moveInput;
+        Debug.DrawLine(brain.transform.position, brain.transform.position + (Vector3)inputs.normalized, Color.blue);
+
         float angle = Vector2.SignedAngle(Vector2.right, vel);
         angle = snapReleaseAngle * Mathf.Round(angle / snapReleaseAngle);
         Vector2 newVel = new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sign(angle * Mathf.Deg2Rad));
 
-        // if (inputs.magnitude > 0.01f)
-        // {
-        //     newVel *= vel.magnitude;
-        //     newVel += inputs * releaseSpeedBoost;
-        // }
-        // else
-        // {
+        if (inputInUse)
+        {
             newVel *= vel.magnitude + releaseSpeedBoost;
-        // }
+        }
+
+        Debug.DrawLine(brain.transform.position, brain.transform.position + (Vector3)newVel, Color.green);
+
+        // Debug.Break();
 
         brain.SetVelocity(newVel);
     }
@@ -181,6 +190,7 @@ public class GrappleSwing : IState
 
         bool climbing = OnClimbable();
         bool tautRope = actualRopeLength > (ropeLength + 0.1f);
+        GrappleMoveType prevMoveType = curMoveType;
 
         if (climbing)
         {
@@ -194,7 +204,26 @@ public class GrappleSwing : IState
         if (!tautRope && climbing)
         {
             vel.y = ClimbUpdate(dt, vel.y);
-            if (Mathf.Abs(brain.moveInput.x) > inputDeadzone)
+
+            bool skipMove = false;
+            float xInput = brain.moveInput.x;
+            if (inputInUse)
+            {
+                if (inputRight && xInput > inputDeadzone)
+                {
+                    skipMove = true;
+                }
+                else if (!inputRight && xInput < -inputDeadzone)
+                {
+                    skipMove = true;
+                }
+                else
+                {
+                    inputInUse = false;
+                }
+            }
+
+            if (!skipMove && Mathf.Abs(brain.moveInput.x) > inputDeadzone)
             {
                 vel.x = WalkUpdate(dt);
             }
@@ -211,6 +240,35 @@ public class GrappleSwing : IState
         {
             vel = AirUpdate(dt);
             vel /= 1f + drag * dt;
+        }
+
+        if (climbing)
+        {
+            curMoveType = GrappleMoveType.CLIMB;
+        }
+        else if (brain.grounded && Mathf.Abs(vel.x) > 0.1f)
+        {
+            curMoveType = GrappleMoveType.WALK;
+        }
+        else
+        {
+            curMoveType = GrappleMoveType.SWING;
+        }
+
+        if (curMoveType != prevMoveType)
+        {
+            if (curMoveType == GrappleMoveType.CLIMB)
+            {
+                brain.InvokeStateTypeUpdate(StateType.GRAPPLE_CLIMB);
+            }
+            else if (curMoveType == GrappleMoveType.WALK)
+            {
+                brain.InvokeStateTypeUpdate(StateType.GRAPPLE_WALK);
+            }
+            else
+            {
+                brain.InvokeStateTypeUpdate(StateType.GRAPPLE_SWING);
+            }    
         }
 
 
@@ -459,4 +517,11 @@ public class GrappleSwing : IState
 
         return vel.normalized * speed;
     }
+}
+
+public enum GrappleMoveType
+{
+    SWING,
+    WALK,
+    CLIMB
 }

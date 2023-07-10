@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: FallState
   m_EditorClassIdentifier: 
   stateType: 4
+  resetJumps: 0
   transitions:
   - targetState: {fileID: 11400000, guid: 5f569a3b071970d4e982335f7494c6e0, type: 2}
     conditions:
@@ -44,8 +45,6 @@ MonoBehaviour:
       inverted: 0
   - targetState: {fileID: 11400000, guid: 121a2dc3b25793549ac39b4b04b7ce1e, type: 2}
     conditions:
-    - condition: {fileID: 11400000, guid: 588407fe15740f542be62b3b986e36af, type: 2}
-      inverted: 0
     - condition: {fileID: 11400000, guid: b3e43eae99b5c5445993adb4ab12db4b, type: 2}
       inverted: 0
     - condition: {fileID: 11400000, guid: 6ef49e044ead1e746a8f4e2675b7fdd0, type: 2}
@@ -54,8 +53,6 @@ MonoBehaviour:
       inverted: 1
   - targetState: {fileID: 11400000, guid: 121a2dc3b25793549ac39b4b04b7ce1e, type: 2}
     conditions:
-    - condition: {fileID: 11400000, guid: 588407fe15740f542be62b3b986e36af, type: 2}
-      inverted: 0
     - condition: {fileID: 11400000, guid: b3e43eae99b5c5445993adb4ab12db4b, type: 2}
       inverted: 0
     - condition: {fileID: 11400000, guid: a3931c56951e9694fb781ecfa089999d, type: 2}

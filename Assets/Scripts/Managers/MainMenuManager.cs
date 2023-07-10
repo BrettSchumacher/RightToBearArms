@@ -21,7 +21,7 @@ public class MainMenuManager : MonoBehaviour
     private void Start()
     {
         startPos = cam.position;
-        Cursor.SetCursor(menuCursor, 16 * Vector2.one, CursorMode.Auto);
+        Cursor.SetCursor(menuCursor, 16 * Vector2.one, CursorMode.ForceSoftware);
     }
 
     private void Update()

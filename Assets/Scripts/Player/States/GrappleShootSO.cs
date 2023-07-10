@@ -182,6 +182,8 @@ public class GrappleShoot : IState
 
         GameManager.OnGameFreeze -= OnGameFreeze;
         GameManager.OnGameUnfreeze -= OnGameUnfreeze;
+
+        paused = false;
     }
 
     public override void OnStateUpdate(float dt)

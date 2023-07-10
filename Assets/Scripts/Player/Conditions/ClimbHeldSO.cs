@@ -7,6 +7,6 @@ public class ClimbHeldSO : IConditionSO
 {
     public override bool IsConditionMet()
     {
-        return true; // brain.climbHeld;
+        return Mathf.Abs(brain.moveInput.y) > brain.movementData.inputDeadzone;
     }
 }

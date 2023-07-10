@@ -7,8 +7,8 @@ public class BearAnimManager : MonoBehaviour
 {
     public static BearAnimManager instance;
 
-    public GameObject hotdogBear;
-    public GameObject hamburgerBear;
+    public Animator animator;
+    public List<StateType> flippedAnims;
 
     BearControllerSM brain;
     /*Collider2D hotdogCollider;
@@ -17,9 +17,8 @@ public class BearAnimManager : MonoBehaviour
     Animator hamburgerAnimator;*/
 
     Collider2D bearCollider;
-    Animator animator;
 
-    bool inHotdog = true;
+    StateType lastState = StateType.IDLE;
 
     private void Awake()
     {
@@ -47,6 +46,13 @@ public class BearAnimManager : MonoBehaviour
     void Start()
     {
         brain.OnStateEnter += OnStateChange;
+        brain.OnStateTypeUpdate += OnStateChange;
+    }
+
+    private void OnDestroy()
+    {
+        brain.OnStateEnter -= OnStateChange;
+        brain.OnStateTypeUpdate -= OnStateChange;
     }
 
     /*
@@ -70,9 +76,78 @@ public class BearAnimManager : MonoBehaviour
     }
     */
 
+    string StateToParam(StateType state)
+    {
+        string param;
+
+        switch (state)
+        {
+            case StateType.IDLE:
+                param = "Idle";
+                break;
+            case StateType.RUN:
+                param = "Walk";
+                break;
+            case StateType.JUMP:
+                param = "Jump";
+                break;
+            case StateType.WALL_GRAB:
+                param = "Wall Grab";
+                break;
+            case StateType.CLIMB:
+                param = "Climb";
+                break;
+            case StateType.WALL_SLIDE:
+                param = "Wall Slide";
+                break;
+            case StateType.WALL_JUMP:
+                param = "Wall Jump";
+                break;
+            case StateType.GRAPPLE:
+            case StateType.GRAPPLE_SHOOT:
+            case StateType.GRAPPLE_RELEASE:
+                param = "Grapple";
+                break;
+            case StateType.GRAPPLE_SWING:
+                param = "Grapple Swing";
+                break;
+            case StateType.GRAPPLE_CLIMB:
+                param = "Grapple Climb";
+                break;
+            case StateType.GRAPPLE_WALK:
+                param = "Grapple Walk";
+                break;
+            default:
+                param = "Fall";
+                break;
+        }
+
+        return param;
+    }
+
     void OnStateChange(StateType newState)
     {
+        string lastParam = StateToParam(lastState);
+        string newParam = StateToParam(newState);
 
+        if (lastParam == newParam)
+        {
+            return;
+        }
+
+        animator.SetBool(lastParam, false);
+        animator.SetBool(newParam, true);
+
+        lastState = newState;
+
+        if (flippedAnims.Contains(newState))
+        {
+            brain.invertSprite = true;
+        }
+        else
+        {
+            brain.invertSprite = false;
+        }
     }
 
     public static Collider2D GetActiveCollider()
